@@ -40,7 +40,6 @@ tf.app.flags.DEFINE_string("run_dir", "sandbox", "directory to store experiment 
 tf.app.flags.DEFINE_string("embed_path", "None", "Path to the trimmed GLoVe embedding")
 tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to restore model parameters from")
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
-tf.app.flags.DEFINE_integer("pytorch_cuda", 1, "specify the PyTorch GPU number")
 
 # Set PATHs
 PATH_TO_SENTEVAL = '../'
@@ -93,9 +92,6 @@ transfer_tasks = ['SST']
 # Set params for SentEval
 params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 10}
 params_senteval = dotdict(params_senteval)
-
-# set gpu device
-torch.cuda.set_device(FLAGS.pytorch_cuda)
 
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)

@@ -17,7 +17,6 @@ import logging
 import torch
 import tensorflow as tf
 
-from examples.exutil import dotdict
 import examples.data as data
 from os.path import join as pjoin
 from discourse_classifier import Encoder, SequenceClassifier
@@ -26,7 +25,6 @@ FLAGS = tf.app.flags.FLAGS
 
 tf.app.flags.DEFINE_integer("state_size", 256, "hidden dimension")
 tf.app.flags.DEFINE_integer("layers", 1, "number of hidden layers")
-tf.app.flags.DEFINE_integer("epochs", 8, "Number of epochs to train.")
 tf.app.flags.DEFINE_integer("max_seq_len", 35, "number of time steps to unroll for BPTT, also the max sequence length")
 tf.app.flags.DEFINE_integer("embed_size", 300, "dimension of GloVE vector to use")
 tf.app.flags.DEFINE_integer("learning_rate_decay_epoch", 1, "Learning rate starts decaying after this epoch.")
@@ -53,6 +51,14 @@ PATH_TO_GLOVE = 'glove/glove.840B.300d.txt'
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)
 import senteval
+
+
+class dotdict(dict):
+    """ dot.notation access to dictionary attributes """
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
+
 
 """
 Note:
@@ -95,6 +101,7 @@ torch.cuda.set_device(FLAGS.pytorch_cuda)
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
+
 def main(_):
     # build the model here
 
@@ -133,6 +140,7 @@ def main(_):
         results_transfer = se.eval(transfer_tasks)
 
         print results_transfer
+
 
 if __name__ == "__main__":
     tf.app.run()

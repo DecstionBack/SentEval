@@ -98,13 +98,13 @@ class Encoder(object):
         return out, encoder_outputs
 
 class SequenceClassifier(object):
-    def __init__(self, encoder, flags, vocab_size, vocab, rev_vocab, embed_path, task, optimizer="adam", is_training=False):
+    def __init__(self, encoder, flags, vocab_size, vocab, rev_vocab, embed_size):
         # task: ["but", "cause"]
 
         batch_size = flags.batch_size
         max_seq_len = flags.max_seq_len
         self.encoder = encoder
-        self.embed_path = embed_path
+        self.embed_size = embed_size
         self.vocab = vocab
         self.rev_vocab = rev_vocab
         self.vocab_size = vocab_size
@@ -117,12 +117,7 @@ class SequenceClassifier(object):
         dropout = flags.dropout
         learning_rate_decay = flags.learning_rate_decay
 
-        self.seqA = tf.placeholder(tf.int32, [None, None])
-        self.seqB = tf.placeholder(tf.int32, [None, None])
-        self.seqA_mask = tf.placeholder(tf.int32, [None, None])
-        self.seqB_mask = tf.placeholder(tf.int32, [None, None])
-
-        self.seqX = tf.placeholder(tf.int32, [None, None])
+        self.seqX = tf.placeholder(tf.float32, [None, None, self.embed_size])
         self.seqX_mask = tf.placeholder(tf.int32, [None, None])
 
         self.labels = tf.placeholder(tf.int32, [None])
@@ -133,49 +128,8 @@ class SequenceClassifier(object):
         self.global_step = tf.Variable(0, trainable=False)
 
         # main computation graph is here
-        self.seqX_w_matrix, self.seqX_rep =  self.encoder.encode(self.seqA_inputs, self.seqA_mask)
-        self.loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(self.logits, self.labels))
+        self.seqX_w_matrix, self.seqX_rep = self.encoder.encode(self.seqX_inputs, self.seqX_mask)
 
-        if is_training:
-            # ==== set up training/updating procedure ====
-            params = tf.trainable_variables()
-            opt = get_optimizer(optimizer)(self.learning_rate)
-
-            gradients = tf.gradients(self.loss, params)
-            clipped_gradients, _ = tf.clip_by_global_norm(gradients, max_gradient_norm)
-            self.gradient_norm = tf.global_norm(gradients)
-            self.param_norm = tf.global_norm(params)
-            self.updates = opt.apply_gradients(
-                zip(clipped_gradients, params), global_step=self.global_step)
-
-            self.saver = tf.train.Saver(tf.global_variables(), max_to_keep=keep)
-
-    def initialize_word_emb(self):
-        # TODO: somewhere needs to call this code
-        with tf.device("/cpu:0"):
-            # TODO: change this part
-            embed = tf.constant(np.load(self.embed_path)['glove'], dtype=tf.float32, name="glove",
-                                shape=[self.vocab_size, self.flags.embedding_size])
-            self.seqA_inputs = tf.nn.embedding_lookup(embed, self.seqA)
-            self.seqB_inputs = tf.nn.embedding_lookup(embed, self.seqB)
-
-            self.seqX_inputs = tf.nn.embedding_lookup(embed, self.seqX)
-
-    def optimize(self, session, because_tokens, because_mask, but_tokens, but_mask, labels):
-        input_feed = {}
-        input_feed[self.seqA] = because_tokens
-        input_feed[self.seqA_mask] = because_mask
-        input_feed[self.seqB] = but_tokens
-        input_feed[self.seqB_mask] = but_mask
-        input_feed[self.labels] = labels
-
-        input_feed[self.encoder.keep_prob] = self.keep_prob_config
-
-        output_feed = [self.updates, self.logits, self.gradient_norm, self.loss, self.param_norm, self.seqA_rep]
-
-        outputs = session.run(output_feed, input_feed)
-
-        return outputs[1], outputs[2], outputs[3], outputs[4], outputs[5]
 
     # we need padding (no need to batch, but need to pad)
     def get_sent_embedding(self, session, sentX, sentX_mask):
@@ -223,9 +177,15 @@ class SequenceClassifier(object):
         logging.info('Found {0}(/{1}) words with glove vectors'.format(len(word_vec), len(word_dict)))
         return word_vec
 
-    def indexify_batch(self, batch):
+    def get_batch(self, batch):
         # sent in batch in decreasing order of lengths (bsize, max_len, word_dim)
-        pass
+        embed = np.zeros((len(batch[0]), len(batch), self.word_emb_dim))
+
+        for i in range(len(batch)):
+            for j in range(len(batch[i])):
+                embed[j, i, :] = self.word_vec[batch[i][j]]
+
+        return torch.FloatTensor(embed)
 
     def encode(self, session, sentences, bsize=64, tokenize=True, verbose=False):
         # this mimics the InferSent's encode() function
@@ -261,7 +221,7 @@ class SequenceClassifier(object):
         # TODO: self.get_batch
         for stidx in range(0, len(sentences), bsize):
             # batch = Variable(self.get_batch(sentences[stidx:stidx + bsize]), volatile=True)
-            batch = self.indexify_batch(sentences[stidx:stidx + bsize])
+            batch = self.get_batch(sentences[stidx:stidx + bsize])
             batch = self.forward((batch, lengths[stidx:stidx + bsize])).data.cpu().numpy()
             embeddings.append(batch)
         embeddings = np.vstack(embeddings)

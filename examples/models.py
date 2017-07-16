@@ -220,4 +220,3 @@ class BLSTMEncoder(nn.Module):
         plt.show()
         
         return output, idxs
-                             

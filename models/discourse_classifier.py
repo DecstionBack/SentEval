@@ -98,13 +98,14 @@ class Encoder(object):
         return out, encoder_outputs
 
 class SequenceClassifier(object):
-    def __init__(self, encoder, flags, vocab_size, vocab, rev_vocab, embed_size):
+    def __init__(self, encoder, flags, vocab_size, vocab, rev_vocab, embed_size, embed_path):
         # task: ["but", "cause"]
 
         batch_size = flags.batch_size
         max_seq_len = flags.max_seq_len
         self.encoder = encoder
         self.embed_size = embed_size
+        self.embed_path = embed_path
         self.vocab = vocab
         self.rev_vocab = rev_vocab
         self.vocab_size = vocab_size
@@ -128,14 +129,14 @@ class SequenceClassifier(object):
         self.global_step = tf.Variable(0, trainable=False)
 
         # main computation graph is here
-        self.seqX_w_matrix, self.seqX_rep = self.encoder.encode(self.seqX_inputs, self.seqX_mask)
+        self.seqX_w_matrix, self.seqX_rep = self.encoder.encode(self.seqX, self.seqX_mask)
 
 
     # we need padding (no need to batch, but need to pad)
     def get_sent_embedding(self, session, sentX, sentX_mask):
         input_feed = {}
-        input_feed[self.seqA] = sentX
-        input_feed[self.seqA_mask] = sentX_mask
+        input_feed[self.seqX] = sentX
+        input_feed[self.seqX_mask] = sentX_mask
 
         input_feed[self.encoder.keep_prob] = 1.
 
@@ -177,15 +178,18 @@ class SequenceClassifier(object):
         logging.info('Found {0}(/{1}) words with glove vectors'.format(len(word_vec), len(word_dict)))
         return word_vec
 
+    # good, this is fixed
     def get_batch(self, batch):
         # sent in batch in decreasing order of lengths (bsize, max_len, word_dim)
-        embed = np.zeros((len(batch[0]), len(batch), self.word_emb_dim))
+        # load in the batch here
+        embed = np.zeros((len(batch), len(batch[0]), self.embed_size))
+        # padding is set to be 0!!
 
         for i in range(len(batch)):
             for j in range(len(batch[i])):
-                embed[j, i, :] = self.word_vec[batch[i][j]]
+                embed[i, j, :] = self.word_vec[batch[i][j]]
 
-        return torch.FloatTensor(embed)
+        return embed
 
     def encode(self, session, sentences, bsize=64, tokenize=True, verbose=False):
         # this mimics the InferSent's encode() function
@@ -208,7 +212,7 @@ class SequenceClassifier(object):
                 s_f = ['</s>']
             sentences[i] = s_f
 
-        lengths = np.array([len(s) for s in sentences])
+        lengths = np.array([len(s) for s in sentsences])
         n_wk = np.sum(lengths)
         if verbose:
             print('Nb words kept : {0}/{1} ({2} %)'.format(n_wk, n_w, round((100.0 * n_wk) / n_w, 2)))

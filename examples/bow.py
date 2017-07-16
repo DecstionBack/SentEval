@@ -17,7 +17,7 @@ import data
 # Set PATHs
 PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
 PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
-PATH_TO_GLOVE = '/deep/u/anie/glove/'
+PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
 RUN_DIR = '/deep/u/anie/SentEval/run_dir/bow/'
                 
 # import SentEval

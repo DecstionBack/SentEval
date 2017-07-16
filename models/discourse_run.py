@@ -97,9 +97,9 @@ logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 def main(_):
     # build the model here
 
-    root_dir = os.path.abspath(pjoin(os.curdir, os.pardir))
+    if not os.path.exists(FLAGS.run_dir):
+        os.makedirs(FLAGS.run_dir)
 
-    assert os.path.exists(FLAGS.run_dir), "run_dir does not exist, no model to load from"
     assert FLAGS.embed_path is not "None", "must pick a loading path"
 
     file_handler = logging.FileHandler("{0}/log.txt".format(FLAGS.run_dir))

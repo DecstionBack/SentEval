@@ -5,6 +5,7 @@
 # LICENSE file in the root directory of this source tree. 
 #
 
+import os
 import sys
 import numpy as np
 import logging
@@ -17,6 +18,7 @@ import data
 PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
 PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
 PATH_TO_GLOVE = '/deep/u/anie/glove/'
+RUN_DIR = '/deep/u/anie/SentEval/run_dir/bow/'
                 
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)
@@ -71,6 +73,11 @@ torch.cuda.set_device(0)
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 if __name__ == "__main__":
+    if not os.path.exists(RUN_DIR):
+        os.makedirs(RUN_DIR)
+    file_handler = logging.FileHandler("{0}/log.txt".format(RUN_DIR))
+    logging.getLogger().addHandler(file_handler)
+
     se = senteval.SentEval(params_senteval, batcher, prepare)
     transfer_tasks = ['MR', 'CR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC', 'SICKEntailment', 'SICKRelatedness', 'STSBenchmark', 'STS14']
     results = se.eval(transfer_tasks)

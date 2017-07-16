@@ -81,8 +81,9 @@ def batcher(params, batch):
 
 
 # define transfer tasks
-transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-                  'SICKEntailment', 'MRPC', 'STS14']
+# transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+#                   'SICKEntailment', 'MRPC', 'STS14']
+transfer_tasks = ['SST']
 
 # Set params for SentEval
 params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 10}

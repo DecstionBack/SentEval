@@ -17,7 +17,6 @@ import logging
 import torch
 import tensorflow as tf
 
-import examples.data as data
 from os.path import join as pjoin
 from discourse_classifier import Encoder, SequenceClassifier
 

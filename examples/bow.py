@@ -63,7 +63,7 @@ def batcher(params, batch):
 
 
 # Set params for SentEval
-params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': False, 'kfold':5}
+params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold':5}
 params_senteval = dotdict(params_senteval)
 
 # set gpu device

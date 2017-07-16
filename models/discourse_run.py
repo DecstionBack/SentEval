@@ -124,7 +124,7 @@ def main(_):
 
         # restore the model here
         best_epoch = FLAGS.best_epoch
-        model_saver = tf.train.Saver(max_to_keep=FLAGS.epochs)
+        model_saver = tf.train.Saver(max_to_keep=FLAGS.keep)
 
         assert FLAGS.restore_checkpoint is not None, "we must be able to reload the model"
         logging.info("restore model from best epoch %d" % best_epoch)

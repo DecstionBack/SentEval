@@ -122,6 +122,8 @@ def main(_):
             encoder = Encoder(size=FLAGS.state_size, num_layers=FLAGS.layers)
             sc = SequenceClassifier(encoder, FLAGS, embed_size, embed_path)
 
+        params_senteval.infersent = sc
+
         # restore the model here
         best_epoch = FLAGS.best_epoch
         model_saver = tf.train.Saver(max_to_keep=FLAGS.keep)

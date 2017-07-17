@@ -120,7 +120,7 @@ def main(_):
 
         with tf.variable_scope("model", initializer=initializer):
             encoder = Encoder(size=FLAGS.state_size, num_layers=FLAGS.layers)
-            sc = SequenceClassifier(encoder, FLAGS, embed_size, embed_path)
+            sc = SequenceClassifier(session, encoder, FLAGS, embed_size, embed_path)
 
         params_senteval.infersent = sc
 

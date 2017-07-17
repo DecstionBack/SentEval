@@ -73,12 +73,13 @@ class Encoder(object):
         return out, encoder_outputs
 
 class SequenceClassifier(object):
-    def __init__(self, encoder, flags, embed_size, embed_path):
+    def __init__(self, session, encoder, flags, embed_size, embed_path):
         self.encoder = encoder
         self.embed_size = embed_size
         self.embed_path = embed_path
         self.flags = flags
         self.label_size = 2
+        self.session = session
 
         self.learning_rate = flags.learning_rate
         max_gradient_norm = flags.max_gradient_norm
@@ -160,7 +161,7 @@ class SequenceClassifier(object):
 
         return embed, mask
 
-    def encode(self, session, sentences, bsize=64, tokenize=True, verbose=False):
+    def encode(self, sentences, bsize=64, tokenize=True, verbose=False):
         # this mimics the InferSent's encode() function
         # so far, this really isn't doing much...except sorting and indexing
         tic = time.time()
@@ -193,7 +194,7 @@ class SequenceClassifier(object):
         embeddings = []
         for stidx in range(0, len(sentences), bsize):
             batch, batch_mask = self.get_batch(sentences[stidx:stidx + bsize])
-            batch = self.get_sent_embedding(session, batch, batch_mask)
+            batch = self.get_sent_embedding(self.session, batch, batch_mask)
             embeddings.append(batch)
         embeddings = np.vstack(embeddings)
 

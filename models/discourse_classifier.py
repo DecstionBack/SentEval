@@ -20,7 +20,8 @@ from tensorflow.python.ops import variable_scope as vs
 
 FLAGS = tf.app.flags.FLAGS
 
-logging.basicConfig(level=logging.INFO)
+# this is set as DEBUG
+# logging.basicConfig(level=logging.INFO)
 
 def get_optimizer(opt):
     if opt == "adam":

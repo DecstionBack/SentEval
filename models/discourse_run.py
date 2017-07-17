@@ -42,9 +42,9 @@ tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to resto
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
 
 # Set PATHs
-PATH_TO_SENTEVAL = '../'
-PATH_TO_DATA = '../data/senteval_data/'
-PATH_TO_GLOVE = 'glove/glove.840B.300d.txt'
+PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
+PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
+PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
 
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)

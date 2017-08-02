@@ -40,6 +40,7 @@ tf.app.flags.DEFINE_string("run_dir", "sandbox", "directory to store experiment 
 tf.app.flags.DEFINE_string("embed_path", "None", "Path to the trimmed GLoVe embedding")
 tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to restore model parameters from")
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
+tf.app.flags.DEFINE_string("class_label", "", "the path to load in class label")
 
 # Set PATHs
 PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
@@ -87,6 +88,7 @@ def batcher(params, batch):
 # define transfer tasks
 transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
                   'SICKEntailment', 'STS14']
+# MRPC
 
 # Set params for SentEval
 params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 10}
@@ -119,7 +121,7 @@ def main(_):
 
         with tf.variable_scope("model", initializer=initializer):
             encoder = Encoder(size=FLAGS.state_size, num_layers=FLAGS.layers)
-            sc = SequenceClassifier(session, encoder, FLAGS, embed_size, embed_path)
+            sc = SequenceClassifier(session, encoder, FLAGS, embed_size, FLAGS.label_size, embed_path)
 
         params_senteval.infersent = sc
 

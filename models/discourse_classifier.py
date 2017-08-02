@@ -69,17 +69,17 @@ class Encoder(object):
                 out = fw_out + bw_out
 
             # this is extracting the last hidden states
-            encoder_outputs = tf.add(output_state_fw[0][1], output_state_bw[0][1])
+            encoder_outputs = tf.add(output_state_fw[-1][1], output_state_bw[-1][1])
 
         return out, encoder_outputs
 
 class SequenceClassifier(object):
-    def __init__(self, session, encoder, flags, embed_size, embed_path):
+    def __init__(self, session, encoder, flags, embed_size, label_size, embed_path):
         self.encoder = encoder
         self.embed_size = embed_size
         self.embed_path = embed_path
         self.flags = flags
-        self.label_size = 2
+        self.label_size = label_size
         self.session = session
 
         self.learning_rate = flags.learning_rate

@@ -41,11 +41,17 @@ tf.app.flags.DEFINE_string("embed_path", "None", "Path to the trimmed GLoVe embe
 tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to restore model parameters from")
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
 tf.app.flags.DEFINE_string("class_label", "", "the path to load in class label")
+tf.app.flags.DEFINE_string("cluster", "cres", "cres/deep the path")
 
 # Set PATHs
-PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
-PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
-PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
+if FLAGS.cluster == "deep":
+    PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
+    PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
+    PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
+else:
+    PATH_TO_SENTEVAL = '/home/anie/Documents/SentEval'
+    PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
+    PATH_TO_GLOVE = '/home/anie/Documents/discourse/data/glove.6B/glove.840B.300d.txt'
 
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)

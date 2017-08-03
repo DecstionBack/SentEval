@@ -37,7 +37,7 @@ tf.app.flags.DEFINE_integer("keep", 0, "How many checkpoints to keep, 0 indicate
 tf.app.flags.DEFINE_integer("print_every", 5, "How many iterations to do per print.")
 tf.app.flags.DEFINE_float("max_gradient_norm", 5.0, "Clip gradients to this norm.")
 tf.app.flags.DEFINE_string("run_dir", "sandbox", "directory to store experiment outputs")
-tf.app.flags.DEFINE_string("embed_path", "None", "Path to the trimmed GLoVe embedding")
+# tf.app.flags.DEFINE_string("embed_path", "None", "Path to the trimmed GLoVe embedding")
 tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to restore model parameters from")
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
 tf.app.flags.DEFINE_string("cluster", "cres", "cres/deep the path")
@@ -109,11 +109,11 @@ def main(_):
     if not os.path.exists(FLAGS.run_dir):
         os.makedirs(FLAGS.run_dir)
 
-    assert FLAGS.embed_path is not "None", "must pick a loading path"
+    # assert FLAGS.embed_path is not "None", "must pick a loading path"
 
     file_handler = logging.FileHandler("{0}/log.txt".format(FLAGS.run_dir))
     logging.getLogger().addHandler(file_handler)
-    embed_path = FLAGS.embed_path
+    embed_path = PATH_TO_GLOVE  # FLAGS.embed_path
     embed_size = FLAGS.embed_size
 
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:

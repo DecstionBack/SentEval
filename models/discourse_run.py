@@ -40,7 +40,6 @@ tf.app.flags.DEFINE_string("run_dir", "sandbox", "directory to store experiment 
 tf.app.flags.DEFINE_string("embed_path", "None", "Path to the trimmed GLoVe embedding")
 tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to restore model parameters from")
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
-tf.app.flags.DEFINE_string("class_label", "", "the path to load in class label")
 tf.app.flags.DEFINE_string("cluster", "cres", "cres/deep the path")
 
 # Set PATHs

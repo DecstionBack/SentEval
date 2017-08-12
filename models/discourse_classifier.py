@@ -92,6 +92,13 @@ class Encoder(object):
                         encoder_outputs = max_forward + max_backward
                     else:
                         encoder_outputs = tf.concat(1, [max_forward, max_backward])
+                elif FLAGS.temp_mean:
+                    mean_forward = tf.reduce_mean(fw_out, axis=1)
+                    mean_backward = tf.reduce_mean(bw_out, axis=1)
+                    if not FLAGS.concat:
+                        encoder_outputs = mean_forward + mean_backward
+                    else:
+                        encoder_outputs = tf.concat(1, [mean_forward, mean_backward])
                 else:
                     if not FLAGS.concat:
                         encoder_outputs = tf.add(output_state_fw[-1][1], output_state_bw[-1][1])

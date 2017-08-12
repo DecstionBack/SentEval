@@ -36,11 +36,19 @@ class Encoder(object):
     def __init__(self, size, num_layers):
         self.size = size
         self.keep_prob = tf.placeholder(tf.float32)
-        lstm_cell = rnn_cell.BasicLSTMCell(self.size)
-        lstm_cell = DropoutWrapper(lstm_cell, input_keep_prob=self.keep_prob, seed=123)
-        self.encoder_cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell] * num_layers, state_is_tuple=True)
 
-    def encode(self, inputs, masks, reuse=False, scope_name=""):
+        if FLAGS.rnn == "lstm":
+            cell = rnn_cell.BasicLSTMCell(self.size)
+            state_is_tuple = True
+        else:
+            cell = rnn_cell.GRUCell(self.size)
+            state_is_tuple = False
+
+        cell = DropoutWrapper(cell, input_keep_prob=self.keep_prob, seed=123)
+        self.encoder_cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers, state_is_tuple=state_is_tuple)
+
+    # could consider instead of averaging, I concatenate
+    def encode(self, inputs, masks, reuse=False, scope_name="", temp_max=False):
         """
         In a generalized encode function, you pass in your inputs,
         masks, and an initial
@@ -66,10 +74,29 @@ class Encoder(object):
                 (fw_out, bw_out), (output_state_fw, output_state_bw) = tf.nn.bidirectional_dynamic_rnn(self.encoder_cell,
                                                                                          self.encoder_cell, inp, srclen,
                                                                                          scope=scope, dtype=tf.float32)
+                # (batch_size, T, hidden_size)
                 out = fw_out + bw_out
 
+            # before we are using state_is_tuple=True, meaning we only chose top layer
+            # now we choose both so layer 1 and layer 2 will have a difference
             # this is extracting the last hidden states
-            encoder_outputs = tf.add(output_state_fw[-1][1], output_state_bw[-1][1])
+            if FLAGS.rnn == "gru":
+                encoder_outputs = tf.add(output_state_fw, output_state_bw)  # used to have [0][1]
+            else:
+                # last layer [-1], hidden state [1]
+                # this works with multilayer
+                if temp_max:
+                    max_forward = tf.reduce_max(fw_out, axis=1)
+                    max_backward = tf.reduce_max(bw_out, axis=1)
+                    if not FLAGS.concat:
+                        encoder_outputs = max_forward + max_backward
+                    else:
+                        encoder_outputs = tf.concat(1, [max_forward, max_backward])
+                else:
+                    if not FLAGS.concat:
+                        encoder_outputs = tf.add(output_state_fw[-1][1], output_state_bw[-1][1])
+                    else:
+                        encoder_outputs = tf.concat(1, [output_state_fw[-1][1], output_state_bw[-1][1]])
 
         return out, encoder_outputs
 
@@ -99,7 +126,7 @@ class SequenceClassifier(object):
         self.global_step = tf.Variable(0, trainable=False)
 
         # main computation graph is here
-        self.seqX_w_matrix, self.seqX_rep = self.encoder.encode(self.seqX, self.seqX_mask)
+        self.seqX_w_matrix, self.seqX_rep = self.encoder.encode(self.seqX, self.seqX_mask, temp_max=FLAGS.temp_max)
 
     # we need padding (no need to batch, but need to pad)
     def get_sent_embedding(self, session, sentX, sentX_mask):

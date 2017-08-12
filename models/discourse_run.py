@@ -42,6 +42,7 @@ tf.app.flags.DEFINE_string("restore_checkpoint", None, "checkpoint file to resto
 tf.app.flags.DEFINE_integer("best_epoch", 1, "enter the best epoch to use")
 tf.app.flags.DEFINE_integer("label_size", 14, "enter the number of labels")
 tf.app.flags.DEFINE_string("cluster", "cres", "cres/deep the path")
+tf.app.flags.DEFINE_boolean("concat", False, "if flag True, bidirectional does concatenation not average")
 
 # Set PATHs
 if FLAGS.cluster == "deep":

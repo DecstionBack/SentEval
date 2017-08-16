@@ -134,7 +134,9 @@ class PyTorchClassifier(object):
         for i in range(0, len(devX), self.batch_size):
             Xbatch = Variable(devX[i:i + self.batch_size], volatile=True)
             output = self.model(Xbatch)
-            yhat = np.append(yhat, output.data.max(1)[1].squeeze(1).cpu().numpy())
+            # this line is for PyTorch==0.12.1
+            # yhat = np.append(yhat, output.data.max(1)[1].squeeze(1).cpu().numpy())
+            yhat = np.append(yhat, output.data.max(1)[1].cpu().numpy())
         yhat = np.vstack(yhat)
         return yhat
     

@@ -139,7 +139,7 @@ def main(_):
         with tf.variable_scope("snli", reuse=None, initializer=initializer):
             # preparation for SNLI
             snli_encoder = Encoder(size=FLAGS.state_size, num_layers=FLAGS.layers)
-            snli_sc = SequenceClassifier(session, encoder, FLAGS, embed_size, FLAGS.label_size, embed_path)
+            snli_sc = SequenceClassifier(session, snli_encoder, FLAGS, embed_size, FLAGS.label_size, embed_path)
 
         params_senteval.discourse = discourse_sc
         params_senteval.snli = snli_sc

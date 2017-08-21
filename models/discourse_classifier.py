@@ -225,7 +225,7 @@ class SequenceClassifier(object):
         lengths, idx_sort = np.sort(lengths)[::-1], np.argsort(-lengths)
         sentences = np.array(sentences)[idx_sort]
 
-        # this should be fine now? Hopefully.
+        # this goes through an entire corpus, by batch size
         embeddings = []
         for stidx in range(0, len(sentences), bsize):
             batch, batch_mask = self.get_batch(sentences[stidx:stidx + bsize])
@@ -240,6 +240,7 @@ class SequenceClassifier(object):
         if verbose:
             print(
             'Speed : {0} sentences/s (bsize={1})'.format(round(len(embeddings) / (time.time() - tic), 2), bsize))
+
         return embeddings
 
     def extract_sent(self, positions, sent):

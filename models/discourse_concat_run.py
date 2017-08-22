@@ -123,7 +123,9 @@ def main(_):
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:
         json.dump(FLAGS.__flags, fout)
 
-    with tf.Graph().as_default(), tf.Session() as session:
+    config = tf.ConfigProto(allow_soft_placement=True)
+
+    with tf.Graph().as_default(), tf.device('/gpu:1'), tf.Session(config=config) as session:
         tf.set_random_seed(FLAGS.seed)
 
         initializer = tf.random_uniform_initializer(-FLAGS.init_scale, FLAGS.init_scale, seed=FLAGS.seed)

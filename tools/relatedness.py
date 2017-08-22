@@ -46,19 +46,19 @@ class RelatednessPytorch(object):
         self.model = nn.Sequential(
             nn.Linear(self.inputdim, self.nclasses),
             nn.Softmax(),
-            ).cuda()
-        self.loss_fn = nn.MSELoss().cuda()
+            ).cuda(0)
+        self.loss_fn = nn.MSELoss().cuda(0)
         self.loss_fn.size_average = False
         self.optimizer = optim.Adam(self.model.parameters(), weight_decay=self.l2reg)  
     
     def prepare_data(self, trainX, trainy, devX, devy, testX, testy):
         # Transform probs to log-probs for KL-divergence
-        trainX = torch.FloatTensor(trainX).cuda()
-        trainy = torch.FloatTensor(trainy).cuda()
-        devX = torch.FloatTensor(devX).cuda()
-        devy = torch.FloatTensor(devy).cuda()
-        testX = torch.FloatTensor(testX).cuda()
-        testY = torch.FloatTensor(testy).cuda()
+        trainX = torch.FloatTensor(trainX).cuda(0)
+        trainy = torch.FloatTensor(trainy).cuda(0)
+        devX = torch.FloatTensor(devX).cuda(0)
+        devy = torch.FloatTensor(devy).cuda(0)
+        testX = torch.FloatTensor(testX).cuda(0)
+        testY = torch.FloatTensor(testy).cuda(0)
         import pdb
         # pdb.set_trace()
         

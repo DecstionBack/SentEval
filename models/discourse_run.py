@@ -124,7 +124,10 @@ def main(_):
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:
         json.dump(FLAGS.__flags, fout)
 
-    with tf.Graph().as_default(), tf.Session() as session:
+    # limit amount of GPU being used so PyTorch can use it.
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+
+    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
         tf.set_random_seed(FLAGS.seed)
 
         initializer = tf.random_uniform_initializer(-FLAGS.init_scale, FLAGS.init_scale, seed=FLAGS.seed)

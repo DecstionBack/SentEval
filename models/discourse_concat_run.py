@@ -39,7 +39,6 @@ tf.app.flags.DEFINE_boolean("concat", False, "if flag True, bidirectional does c
 tf.app.flags.DEFINE_boolean("temp_max", False, "if flag true, will use Temporal Max Pooling")
 tf.app.flags.DEFINE_boolean("temp_mean", False, "if flag true, will use Temporal Mean Pooling")
 tf.app.flags.DEFINE_string("rnn", "lstm", "lstm/gru architecture choice")
-tf.app.flags.DEFINE_integer("tf_gpu", 0, "if sepcify 0, meaning it will share PyTorch's gpu, otherwise specify 1")
 
 # Set PATHs
 if FLAGS.cluster == "deep":
@@ -54,6 +53,7 @@ else:
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)
 import senteval
+
 
 class dotdict(dict):
     """ dot.notation access to dictionary attributes """
@@ -124,14 +124,12 @@ def main(_):
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:
         json.dump(FLAGS.__flags, fout)
 
-    with tf.Graph().as_default(), tf.Session() as session:
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+
+    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
         tf.set_random_seed(FLAGS.seed)
 
         initializer = tf.random_uniform_initializer(-FLAGS.init_scale, FLAGS.init_scale, seed=FLAGS.seed)
-
-        # with tf.variable_scope("model", initializer=initializer):
-        #     encoder = Encoder(size=FLAGS.state_size, num_layers=FLAGS.layers)
-        #     sc = SequenceClassifier(session, encoder, FLAGS, embed_size, FLAGS.label_size, embed_path)
 
         with tf.variable_scope("discourse", reuse=None, initializer=initializer):
             encoder = Encoder(size=FLAGS.state_size, num_layers=FLAGS.layers)

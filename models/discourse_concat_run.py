@@ -39,6 +39,7 @@ tf.app.flags.DEFINE_boolean("concat", False, "if flag True, bidirectional does c
 tf.app.flags.DEFINE_boolean("temp_max", False, "if flag true, will use Temporal Max Pooling")
 tf.app.flags.DEFINE_boolean("temp_mean", False, "if flag true, will use Temporal Mean Pooling")
 tf.app.flags.DEFINE_string("rnn", "lstm", "lstm/gru architecture choice")
+tf.app.flags.DEFINE_integer("tf_gpu", 0, "if sepcify 0, meaning it will share PyTorch's gpu, otherwise specify 1")
 
 # Set PATHs
 if FLAGS.cluster == "deep":
@@ -123,9 +124,7 @@ def main(_):
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:
         json.dump(FLAGS.__flags, fout)
 
-    config = tf.ConfigProto(allow_soft_placement=True)
-
-    with tf.Graph().as_default(), tf.device('/gpu:1'), tf.Session(config=config) as session:
+    with tf.Graph().as_default(), tf.Session() as session:
         tf.set_random_seed(FLAGS.seed)
 
         initializer = tf.random_uniform_initializer(-FLAGS.init_scale, FLAGS.init_scale, seed=FLAGS.seed)

@@ -28,7 +28,7 @@ tf.app.flags.DEFINE_integer("max_seq_len", 35, "number of time steps to unroll f
 tf.app.flags.DEFINE_integer("embed_size", 300, "dimension of GloVE vector to use")
 tf.app.flags.DEFINE_integer("learning_rate_decay_epoch", 1, "Learning rate starts decaying after this epoch.")
 tf.app.flags.DEFINE_float("dropout", 0., "probability of dropping units")
-tf.app.flags.DEFINE_integer("batch_size", 100, "batch size")
+tf.app.flags.DEFINE_integer("batch_size", 200, "batch size")
 tf.app.flags.DEFINE_integer("seed", 123, "random seed to use")
 tf.app.flags.DEFINE_float("init_scale", 0.1, "scale for random initialization")
 tf.app.flags.DEFINE_float("learning_rate", 0.01, "initial learning rate")
@@ -138,6 +138,7 @@ def main(_):
             sc = SequenceClassifier(session, encoder, FLAGS, embed_size, FLAGS.label_size, embed_path)
 
         params_senteval.infersent = sc
+        params_senteval.batch_size = FLAGS.batch_size
 
         # restore the model here
         best_epoch = FLAGS.best_epoch
@@ -149,6 +150,8 @@ def main(_):
         model_saver.restore(session, checkpoint_path + ("-%d" % best_epoch))
 
         se = senteval.SentEval(params_senteval, batcher, prepare)
+
+        logging.info("evaluation starts")
         results_transfer = se.eval(transfer_tasks)
 
         print results_transfer

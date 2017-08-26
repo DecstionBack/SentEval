@@ -46,6 +46,7 @@ tf.app.flags.DEFINE_boolean("concat", False, "if flag True, bidirectional does c
 tf.app.flags.DEFINE_boolean("temp_max", False, "if flag true, will use Temporal Max Pooling")
 tf.app.flags.DEFINE_boolean("temp_mean", False, "if flag true, will use Temporal Mean Pooling")
 tf.app.flags.DEFINE_string("rnn", "lstm", "lstm/gru architecture choice")
+tf.app.flags.DEFINE_float("gpu_frac", 0.7, "fraction of GPU assigned to Tensorflow")
 
 # Set PATHs
 if FLAGS.cluster == "deep":
@@ -125,7 +126,7 @@ def main(_):
         json.dump(FLAGS.__flags, fout)
 
     # limit amount of GPU being used so PyTorch can use it.
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=FLAGS.gpu_frac)
 
     with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
         tf.set_random_seed(FLAGS.seed)

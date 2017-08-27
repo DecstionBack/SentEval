@@ -46,12 +46,12 @@ if FLAGS.cluster == "deep":
     PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
     PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
     PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
-    MODEL_PATH = '/afs/cs.stanford.edu/u/anie/SentEval/models/infersent.allnli.pickle'
+    MODEL_PATH = './infersent.allnli.pickle'
 else:
     PATH_TO_SENTEVAL = '/home/anie/Documents/SentEval'
     PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
     PATH_TO_GLOVE = '/home/anie/Documents/discourse/data/glove.6B/glove.840B.300d.txt'
-    MODEL_PATH = '/home/anie/Documents/cresta/ai/clustering/infersent.allnli.pickle'
+    MODEL_PATH = './infersent.allnli.pickle'
 
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)

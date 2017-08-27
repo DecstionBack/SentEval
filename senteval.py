@@ -18,6 +18,7 @@ from mrpc import MRPCEval
 from sts import STS12Eval, STS13Eval, STS14Eval, STS15Eval, STS16Eval, STSBenchmarkEval
 from sst import SSTBinaryEval
 from rank import ImageCaptionRetrievalEval
+from dis import DISEval
 
 
 class SentEval(object):
@@ -47,7 +48,7 @@ class SentEval(object):
         
         self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC', 'SICKRelatedness',\
                       'SICKEntailment', 'STSBenchmark', 'SNLI', 'ImageCaptionRetrieval',\
-                          'STS12', 'STS13', 'STS14', 'STS15', 'STS16']        
+                          'STS12', 'STS13', 'STS14', 'STS15', 'STS16', 'DIS']
         
 
     def eval(self, name):
@@ -79,6 +80,8 @@ class SentEval(object):
             self.evaluation = SICKEntailmentEval(self.params.task_path + '/SICK', seed=self.params.seed)
         elif name == 'SNLI':
             self.evaluation = SNLIEval(self.params.task_path + '/SNLI', seed=self.params.seed)
+        elif name == 'DIS':
+            self.evaluation = DISEval(self.params.task_path + '/DIS', seed=self.params.seed)
         elif name in ['STS12', 'STS13', 'STS14', 'STS15', 'STS16']:
             fpath = name + '-en-test'
             self.evaluation = eval(name + 'Eval')(self.params.task_path + '/STS/' + fpath, seed=self.params.seed)

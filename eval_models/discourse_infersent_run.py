@@ -121,6 +121,7 @@ def main(_):
 
     params_senteval.infersent = torch.load('infersent.allnli.pickle', map_location=lambda storage, loc: storage)
     params_senteval.infersent.set_glove_path(PATH_TO_GLOVE)
+    params_senteval.infersent.use_cuda = False
 
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:
         json.dump(FLAGS.__flags, fout)

@@ -46,12 +46,10 @@ if FLAGS.cluster == "deep":
     PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
     PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
     PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
-    MODEL_PATH = './infersent.allnli.pickle'
 else:
     PATH_TO_SENTEVAL = '/home/anie/Documents/SentEval'
     PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
     PATH_TO_GLOVE = '/home/anie/Documents/discourse/data/glove.6B/glove.840B.300d.txt'
-    MODEL_PATH = './infersent.allnli.pickle'
 
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)
@@ -121,6 +119,10 @@ def main(_):
     embed_path = PATH_TO_GLOVE  # FLAGS.embed_path
     embed_size = FLAGS.embed_size
 
+    with open('infersent.allnli.pickle', 'rb') as f:
+        params_senteval.infersent = torch.load(f)
+    params_senteval.infersent.set_glove_path(PATH_TO_GLOVE)
+
     with open(os.path.join(FLAGS.run_dir, "flags.json"), 'w') as fout:
         json.dump(FLAGS.__flags, fout)
 
@@ -138,9 +140,6 @@ def main(_):
 
         params_senteval.discourse = sc
         params_senteval.batch_size = FLAGS.batch_size
-
-        params_senteval.infersent = torch.load(MODEL_PATH)
-        params_senteval.infersent.set_glove_path(PATH_TO_GLOVE)
 
         # restore the model here
         best_epoch = FLAGS.best_epoch

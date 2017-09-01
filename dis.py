@@ -12,7 +12,7 @@ from tools.validation import SplitClassifier
 
 class DISEval(object):
     def __init__(self, taskpath, seed=1111):
-        logging.debug('***** Transfer task : SNLI Entailment*****\n\n')
+        logging.debug('***** Transfer task : Discourse Classification*****\n\n')
         self.seed = seed
         train1 = self.loadFile(os.path.join(taskpath, 's1.train'))
         train2 = self.loadFile(os.path.join(taskpath, 's2.train'))
@@ -55,7 +55,7 @@ class DISEval(object):
     def run(self, params, batcher):
         self.X, self.y = {}, {}
         # TODO: change this part
-        dico_label = {'entailment':0,  'neutral':1, 'contradiction':2}
+        dico_label = {'but': 0, 'because': 1, 'when': 2, 'if': 3, 'for example': 4, 'so': 5, 'before': 6, 'still': 7}
         for key in self.data:
             if key not in self.X: self.X[key] = []
             if key not in self.y: self.y[key] = []

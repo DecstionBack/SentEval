@@ -23,6 +23,7 @@ STSBenchmark='http://ixa2.si.ehu.es/stswiki/images/4/48/Stsbenchmark.tar.gz'
 SNLI='https://nlp.stanford.edu/projects/snli/snli_1.0.zip'
 MULTINLI='https://www.nyu.edu/projects/bowman/multinli/multinli_0.9.zip'
 COCO='https://s3.amazonaws.com/senteval/coco_r101_feat'
+DIS='https://cocolab.stanford.edu/datasets/discourse_task_v1.zip'
 
 # MRPC is a special case (we use "cabextract" to extract the msi file on Linux, see below)
 MRPC='https://download.microsoft.com/download/D/4/6/D46FF87A-F6B9-4252-AA8B-3604ED519838/MSRParaphraseCorpus.msi'
@@ -198,6 +199,15 @@ do
     rm $fpath
 done
 rm -r $data_path/SNLI/snli_1.0
+
+### download DIS
+mkdir $data_path/DIS
+curl -Lo $data_path/DIS/discourse_task_v1.zip $DIS
+unzip $data_path/DIS/discourse_task_v1.zip -d $data_path/DIS
+rm $data_path/DIS/discourse_task_v1.zip
+rm -r $data_path/DIS/__MACOSX
+mv $data_path/DIS/discourse_task_v1/* $data_path/DIS
+rm -r $data_path/DIS/discourse_task_v1/
 
 
 

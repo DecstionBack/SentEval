@@ -70,7 +70,7 @@ class DISEval(object):
                 if len(batch1) == len(batch2) and len(batch1) > 0:
                     enc1 = batcher(params, batch1)
                     enc2 = batcher(params, batch2)
-                    enc_input.append(np.hstack(( enc1, enc2, enc1 * enc2, np.abs(enc1 - enc2) )))
+                    enc_input.append(np.hstack(( enc1, enc2, enc1 * enc2, enc1 - enc2, (enc1 + enc2) / 2.)))
                 if (ii*params.batch_size) % (20000*params.batch_size) == 0:
                     logging.info("PROGRESS (encoding): %.2f%%" % (100 * ii / n_labels))
             self.X[key] = np.vstack(enc_input)

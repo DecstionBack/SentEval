@@ -54,7 +54,7 @@ class SentEval(object):
         self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC',
                            'SICKRelatedness', 'SICKEntailment', 'STSBenchmark',
                            'SNLI', 'ImageCaptionRetrieval', 'STS12', 'STS13',
-                           'STS14', 'STS15', 'STS16']
+                           'STS14', 'STS15', 'STS16', 'DIS']
 
     def eval(self, name):
         # evaluate on evaluation [name], either takes string or list of strings
@@ -90,6 +90,8 @@ class SentEval(object):
                                                  seed=self.params.seed)
         elif name == 'SNLI':
             self.evaluation = SNLIEval(tpath + '/SNLI', seed=self.params.seed)
+        elif name == 'DIS':
+            self.evaluation = DISEval(tpath + '/DIS', seed=self.params.seed)
         elif name in ['STS12', 'STS13', 'STS14', 'STS15', 'STS16']:
             fpath = name + '-en-test'
             self.evaluation = eval(name + 'Eval')(tpath + '/STS/' + fpath,

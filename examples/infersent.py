@@ -46,8 +46,9 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 """
 
 # define transfer tasks
-transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-                  'SICKEntailment', 'MRPC', 'STS14']
+# transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+#                   'SICKEntailment', 'MRPC', 'STS14']
+transfer_tasks = ['DIS']
 
 # define senteval params
 params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,

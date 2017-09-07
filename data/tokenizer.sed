@@ -1,5 +1,3 @@
-#!/bin/sed -f
-
 # Sed script to produce Penn Treebank tokenization on arbitrary raw text.
 # Yeah, sure.
 

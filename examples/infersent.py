@@ -13,6 +13,8 @@ import torch
 from exutil import dotdict
 import logging
 
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Set PATHs
 GLOVE_PATH = '/deep/u/anie/glove/glove.840B.300d.txt'

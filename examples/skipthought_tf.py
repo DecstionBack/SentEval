@@ -15,8 +15,6 @@ import logging
 from exutil import dotdict
 import sys
 import tensorflow as tf
-sys.setdefaultencoding('utf8')
-
 
 # Set PATHs
 PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'

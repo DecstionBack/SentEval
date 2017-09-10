@@ -21,7 +21,7 @@ from senteval.sts import STS12Eval, STS13Eval, STS14Eval, STS15Eval, STS16Eval, 
     STSBenchmarkEval
 from senteval.sst import SSTBinaryEval
 from senteval.rank import ImageCaptionRetrievalEval
-from senteval.dis_old import DISEval
+from senteval.dis import DISEval
 
 class SentEval(object):
     def __init__(self, params, batcher, prepare=None):

@@ -97,8 +97,8 @@ class SNLIEval(object):
                              'usepytorch': params.usepytorch,
                              'cudaEfficient': True,
                              'classifier': params.classifier,
-                             'nhid': params.nhid, 'maxepoch': 15,
-                             'nepoches': 1, 'noreg': True}
+                             'nhid': params.nhid, 'maxepoch': 40,
+                             'nepoches': 4, 'noreg': False}
         clf = SplitClassifier(self.X, self.y, config_classifier)
         devacc, testacc = clf.run()
         logging.debug('Dev acc : {0} Test acc : {1} for SNLI\n'

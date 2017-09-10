@@ -192,7 +192,6 @@ class MLP(PyTorchClassifier):
         self.hiddendim = hiddendim
 
         self.model = nn.Sequential(
-            nn.Dropout(p=0.5),
             nn.Linear(self.inputdim, self.hiddendim),
             nn.BatchNorm1d(self.hiddendim),
             nn.PReLU(),

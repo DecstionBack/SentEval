@@ -100,11 +100,12 @@ def batcher(params, batch):
 # transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
 #                   'SICKEntailment', 'STS14']
 
-transfer_tasks = ['DIS']
+transfer_tasks = ['SNLI']
 # MRPC
 
 # Set params for SentEval
-params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 10}
+params_senteval = {'task_path': PATH_TO_DATA, 'usepytorch': True, 'kfold': 10, "classifier": "MLP",
+                   "nhid": 1000}
 params_senteval = dotdict(params_senteval)
 
 # Set up logger

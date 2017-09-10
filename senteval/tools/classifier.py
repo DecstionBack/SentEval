@@ -193,9 +193,13 @@ class MLP(PyTorchClassifier):
 
         self.model = nn.Sequential(
             nn.Linear(self.inputdim, self.hiddendim),
-            # TODO : add parameter p for dropout
-            nn.Dropout(p=0.25),
-            nn.Tanh(),
+            nn.BatchNorm1d(self.hiddendim),
+            nn.PReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(self.hiddendim, self.hiddendim),
+            nn.BatchNorm1d(self.hiddendim),
+            nn.PReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(self.hiddendim, self.nclasses),
             ).cuda(0)
 

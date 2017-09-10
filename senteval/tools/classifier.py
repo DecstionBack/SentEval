@@ -171,7 +171,7 @@ class LogReg(PyTorchClassifier):
                                              batch_size, seed, cudaEfficient)
         self.model = nn.Sequential(
             nn.Linear(self.inputdim, self.nclasses),
-            ).cuda(0)
+        ).cuda(0)
         self.loss_fn = nn.CrossEntropyLoss().cuda(0)
         self.loss_fn.size_average = False
         self.optimizer = optim.Adam(self.model.parameters(),
@@ -192,6 +192,7 @@ class MLP(PyTorchClassifier):
         self.hiddendim = hiddendim
 
         self.model = nn.Sequential(
+            nn.Dropout(p=0.5),
             nn.Linear(self.inputdim, self.hiddendim),
             nn.BatchNorm1d(self.hiddendim),
             nn.PReLU(),

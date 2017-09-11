@@ -87,11 +87,20 @@ def prepare(params, samples):
     params.infersent.build_vocab([' '.join(s) for s in samples], tokenize=False)
     return
 
+def normalize(embeddings):
+    assert len(embeddings.shape) == 2
+    norms = np.apply_along_axis(np.linalg.norm, 1, embeddings)
+    normed_embeddings = embeddings / norms[:, np.newaxis]
+    return normed_embeddings
 
 def batcher(params, batch):
     # batch contains list of words
     sentences = [' '.join(s) for s in batch]
     embeddings = params.infersent.encode(sentences, bsize=params.batch_size, tokenize=False)
+
+    # InferSent did not normalize, we should
+    # hope this is [batch_size, feat_dim]
+    embeddings = normalize(embeddings)
 
     return embeddings
 

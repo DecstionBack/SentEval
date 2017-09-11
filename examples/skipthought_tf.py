@@ -17,8 +17,9 @@ import sys
 import tensorflow as tf
 
 # Set PATHs
-PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
-PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
+PATH_TO_SENTEVAL = '/home/anie/Documents/SentEval'
+PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
+PATH_TO_SKIPTHOUGHT = '/home/anie/Documents/models/skip_thoughts'
 
 sys.path.insert(0, PATH_TO_SENTEVAL)
 
@@ -27,9 +28,16 @@ from skip_thoughts import encoder_manager
 
 import senteval
 
-VOCAB_FILE = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/vocab.txt"
-EMBEDDING_MATRIX_FILE = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/embeddings.npy"
-CHECKPOINT_PATH = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/model.ckpt-500008"
+cluster = "cresta"
+
+if cluster == "deep":
+    VOCAB_FILE = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/vocab.txt"
+    EMBEDDING_MATRIX_FILE = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/embeddings.npy"
+    CHECKPOINT_PATH = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/model.ckpt-500008"
+else:
+    VOCAB_FILE = "/home/anie/Documents/models/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/vocab.txt"
+    EMBEDDING_MATRIX_FILE = "/home/anie/Documents/models/skip_thoughts/pretrained//skip_thoughts_bi_2017_02_16/embeddings.npy"
+    CHECKPOINT_PATH = "/home/anie/Documents/models/skip_thoughts/pretrained//skip_thoughts_bi_2017_02_16/model.ckpt-500008"
 
 
 def prepare(params, samples):
@@ -46,6 +54,7 @@ def batcher(params, batch):
 params_senteval = {'usepytorch': True,
                    'task_path': PATH_TO_DATA,
                    'batch_size': 512}
+
 params_senteval = dotdict(params_senteval)
 
 # Set up logger
@@ -61,11 +70,12 @@ if __name__ == "__main__":
                        embedding_matrix_file=EMBEDDING_MATRIX_FILE,
                        checkpoint_path=CHECKPOINT_PATH)
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
 
     with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
 
         params_senteval.encoder = encoder
         se = senteval.SentEval(params_senteval, batcher, prepare)
-        se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-                 'SICKEntailment', 'MRPC', 'STS14'])
+        # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+        #          'SICKEntailment', 'MRPC', 'STS14'])
+        se.eval(['DIS', 'SNLI'])

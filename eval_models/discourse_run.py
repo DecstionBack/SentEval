@@ -100,7 +100,7 @@ def batcher(params, batch):
 
     # InferSent did not normalize, we should
     # hope this is [batch_size, feat_dim]
-    embeddings = normalize(embeddings)
+    # embeddings = normalize(embeddings)
 
     return embeddings
 

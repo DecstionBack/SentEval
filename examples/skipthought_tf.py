@@ -22,6 +22,7 @@ PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
 PATH_TO_SKIPTHOUGHT = '/home/anie/Documents/models/skip_thoughts'
 
 sys.path.insert(0, PATH_TO_SENTEVAL)
+sys.path.insert(0, PATH_TO_SKIPTHOUGHT)
 
 from skip_thoughts import configuration
 from skip_thoughts import encoder_manager
@@ -63,9 +64,7 @@ logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 if __name__ == "__main__":
     encoder = encoder_manager.EncoderManager()
 
-    configuration.model_config(bidirectional_encoder=True)
-
-    encoder.load_model(configuration.model_config(),
+    encoder.load_model(configuration.model_config(bidirectional_encoder=True),
                        vocabulary_file=VOCAB_FILE,
                        embedding_matrix_file=EMBEDDING_MATRIX_FILE,
                        checkpoint_path=CHECKPOINT_PATH)

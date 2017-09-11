@@ -45,7 +45,7 @@ def prepare(params, samples):
     return
 
 def batcher(params, batch):
-    embeddings = encoder.encode(session, [str(' '.join(sent))
+    embeddings = encoder.encode([str(' '.join(sent))
                                         if sent!= [] else '.' for sent in batch],
                                      verbose=False, use_eos=True)
     return embeddings
@@ -71,10 +71,8 @@ if __name__ == "__main__":
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
 
-    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
-
-        params_senteval.encoder = encoder
-        se = senteval.SentEval(params_senteval, batcher, prepare)
-        # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-        #          'SICKEntailment', 'MRPC', 'STS14'])
-        se.eval(['DIS', 'SNLI'])
+    params_senteval.encoder = encoder
+    se = senteval.SentEval(params_senteval, batcher, prepare)
+    # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+    #          'SICKEntailment', 'MRPC', 'STS14'])
+    se.eval(['DIS', 'SNLI'])

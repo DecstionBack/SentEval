@@ -45,6 +45,7 @@ tf.app.flags.DEFINE_string("cluster", "cres", "cres/deep the path")
 tf.app.flags.DEFINE_boolean("concat", False, "if flag True, bidirectional does concatenation not average")
 tf.app.flags.DEFINE_boolean("temp_max", False, "if flag true, will use Temporal Max Pooling")
 tf.app.flags.DEFINE_boolean("temp_mean", False, "if flag true, will use Temporal Mean Pooling")
+tf.app.flags.DEFINE_boolean("emb", False, "if flag true, will append averaged word embeddings")
 tf.app.flags.DEFINE_string("rnn", "lstm", "lstm/gru architecture choice")
 tf.app.flags.DEFINE_float("gpu_frac", 0.7, "fraction of GPU assigned to Tensorflow")
 
@@ -106,10 +107,10 @@ def batcher(params, batch):
 
 
 # define transfer tasks
-# transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-#                   'SICKEntailment', 'STS14']
+transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+                  'SICKEntailment', 'STS14']
 
-transfer_tasks = ['DIS']
+# transfer_tasks = ['DIS']
 # MRPC
 
 # Set params for SentEval

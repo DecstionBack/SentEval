@@ -40,6 +40,7 @@ tf.app.flags.DEFINE_boolean("temp_max", False, "if flag true, will use Temporal 
 tf.app.flags.DEFINE_boolean("temp_mean", False, "if flag true, will use Temporal Mean Pooling")
 tf.app.flags.DEFINE_string("rnn", "lstm", "lstm/gru architecture choice")
 tf.app.flags.DEFINE_float("gpu_frac", 0.7, "fraction of GPU assigned to Tensorflow")
+tf.app.flags.DEFINE_boolean("emb", False, "if flag true, will append averaged word embeddings")
 
 # Set PATHs
 if FLAGS.cluster == "deep":

@@ -229,7 +229,12 @@ class SequenceClassifier(object):
         embeddings = []
         for stidx in range(0, len(sentences), bsize):
             batch, batch_mask = self.get_batch(sentences[stidx:stidx + bsize])
+            # batch is (N, T, d) basically
+            avg_sent_emb = np.sum(batch, axis=1)
             batch = self.get_sent_embedding(self.session, batch, batch_mask)
+            # new batch is (N, d), I think...so let's concatenate
+            if FLAGS.emb:
+                batch = np.hstack([batch, avg_sent_emb])  # stack on second dim
             embeddings.append(batch)
         embeddings = np.vstack(embeddings)
 

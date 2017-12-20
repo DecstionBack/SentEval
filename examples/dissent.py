@@ -17,7 +17,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 # Set PATHs
-GLOVE_PATH = '/home/anie/glove/glove.6B/glove.840B.300d.txt'
+GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
 PATH_SENTEVAL = '/home/anie/SentEval'
 PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
 MODEL_PATH = '/home/anie/DisExtract/model/books5_4096_sgd_01_d0_fcd0/dis-model.pickle.encoder'

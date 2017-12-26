@@ -25,6 +25,9 @@ parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all mo
 
 params, _ = parser.parse_known_args()
 
+# set gpu device
+torch.cuda.set_device(params.gpu_id)
+
 # Set PATHs
 GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
 PATH_SENTEVAL = '/home/anie/SentEval'
@@ -68,9 +71,15 @@ params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 if __name__ == "__main__":
+
+    # We map cuda to the current cuda device
+    map_locations = {}
+    for d in range(4):
+        if d != params.gpu_id:
+            map_locations['cuda:{}'.format(d)] = "cuda:{}".format(params.gpu_id)
+
     # Load model
-    params_senteval.infersent = torch.load(MODEL_PATH, map_location={'cuda:1' : 'cuda:0', 'cuda:2' : 'cuda:0',
-                                                                     'cuda:3': 'cuda:0'})
+    params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
     params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
     se = senteval.SentEval(params_senteval, batcher, prepare)

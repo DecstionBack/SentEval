@@ -11,16 +11,25 @@ import sys
 import os
 import torch
 from exutil import dotdict
+import argparse
 import logging
+from os.path import join as pjoin
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+parser = argparse.ArgumentParser(description='DisSent SentEval Evaluation')
+parser.add_argument("--outputdir", type=str, default='sandbox/', help="Output directory")
+parser.add_argument("--outputmodelname", type=str, default='dis-model')
+parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all model's gpu to this id")
+
+params, _ = parser.parse_known_args()
 
 # Set PATHs
 GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
 PATH_SENTEVAL = '/home/anie/SentEval'
 PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
-MODEL_PATH = '/home/anie/DisExtract/model/books5_4096_sgd_01_d0_fcd0/dis-model.pickle.encoder'
+MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
 
 assert os.path.isfile(MODEL_PATH) and os.path.isfile(GLOVE_PATH), \
     'Set MODEL and GloVe PATHs'
@@ -60,7 +69,8 @@ logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 if __name__ == "__main__":
     # Load model
-    params_senteval.infersent = torch.load(MODEL_PATH)
+    params_senteval.infersent = torch.load(MODEL_PATH, map_location={'cuda:1' : 'cuda:0', 'cuda:2' : 'cuda:0',
+                                                                     'cuda:3': 'cuda:0'})
     params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
     se = senteval.SentEval(params_senteval, batcher, prepare)

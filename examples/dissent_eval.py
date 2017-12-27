@@ -123,13 +123,13 @@ if __name__ == "__main__":
 
     # collect number of epochs trained in directory
     model_files = filter(lambda s: params.outputmodelname + '-' in s and 'encoder' not in s, os.listdir(params.outputdir))
-    epoch_numbers = map(lambda s: s.split(params.outputmodelname + '-').replace('.pickle', ''), model_files)
+    epoch_numbers = map(lambda s: s.split(params.outputmodelname + '-')[1].replace('.pickle', ''), model_files)
     # ['8', '7', '9', '3', '11', '2', '1', '5', '4', '6']
     # this is discontinuous :)
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
 
     # original setting
-    if params.search_start_epoch == -1 and params.search_end_epoch == -1:
+    if params.search_start_epoch == -1 or params.search_end_epoch == -1:
         # Load model
         MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
 

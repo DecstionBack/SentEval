@@ -155,7 +155,8 @@ if __name__ == "__main__":
             model_name = params.outputmodelname + '-{}.pickle'.format(epoch)
             model_path = pjoin(params.outputdir, model_name)
 
-            params_senteval.infersent = torch.load(model_path, map_location=map_locations)
+            dissent = torch.load(model_path, map_location=map_locations)
+            params_senteval.infersent = dissent.encoder  # this might be good enough
             params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
             se = senteval.SentEval(params_senteval, batcher, prepare)

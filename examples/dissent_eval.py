@@ -166,5 +166,5 @@ if __name__ == "__main__":
             logging.info(results_transfer)
 
             # now we sift through the result dictionary and save results to csv
-            write_to_csv(pjoin(params.outputdir, 'senteval_results.csv'), results_transfer, first)
+            write_to_csv(pjoin(params.outputdir, 'senteval_results.csv'), epoch, results_transfer, first)
             first = False

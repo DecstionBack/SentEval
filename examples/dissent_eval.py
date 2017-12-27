@@ -152,6 +152,7 @@ if __name__ == "__main__":
 
         first = True
         for epoch in filtered_epoch_numbers:
+            logging.info("******* Epoch {} Evaluation *******".format(epoch))
             model_name = params.outputmodelname + '-{}.pickle'.format(epoch)
             model_path = pjoin(params.outputdir, model_name)
 

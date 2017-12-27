@@ -68,6 +68,7 @@ def batcher(params, batch):
                                          tokenize=False)
     return embeddings
 
+
 def write_to_csv(file_name, results_transfer, print_header=False):
     header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14']
     acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC']
@@ -80,7 +81,7 @@ def write_to_csv(file_name, results_transfer, print_header=False):
         results = []
         for h in acc_header:
             acc = results_transfer[h]['acc']
-            results.append("{0:.2f}".format(acc)) # take 2 digits, and manually round later
+            results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later
         pear = results_transfer['SICKRelatedness']['pearson']
         results.append("{0:.4f}".format(pear))
         pear = results_transfer['SICKEntailment']['pearson']
@@ -97,6 +98,8 @@ def write_to_csv(file_name, results_transfer, print_header=False):
         results.append("{0:.4f}/{0:.4f}".format(sts14_pear_wmean, sts14_pear_mean))
 
         writer.writerow(results)
+
+
 """
 Evaluation of trained model on Transfer Tasks (SentEval)
 """
@@ -122,7 +125,8 @@ if __name__ == "__main__":
             map_locations['cuda:{}'.format(d)] = "cuda:{}".format(params.gpu_id)
 
     # collect number of epochs trained in directory
-    model_files = filter(lambda s: params.outputmodelname + '-' in s and 'encoder' not in s, os.listdir(params.outputdir))
+    model_files = filter(lambda s: params.outputmodelname + '-' in s and 'encoder' not in s,
+                         os.listdir(params.outputdir))
     epoch_numbers = map(lambda s: s.split(params.outputmodelname + '-')[1].replace('.pickle', ''), model_files)
     # ['8', '7', '9', '3', '11', '2', '1', '5', '4', '6']
     # this is discontinuous :)
@@ -141,9 +145,10 @@ if __name__ == "__main__":
 
         logging.info(results_transfer)
     else:
-        filtered_epoch_numbers = filter(lambda i: params.search_start_epoch <= i <= params.search_end_epoch, epoch_numbers)
-        assert len(filtered_epoch_numbers) >= 1, "the epoch search criteria [{}, {}] returns null"
-        logging.info("available epochs are: {}".format(epoch_numbers))
+        filtered_epoch_numbers = filter(lambda i: params.search_start_epoch <= i <= params.search_end_epoch,
+                                        epoch_numbers)
+        assert len(filtered_epoch_numbers) >= 1, "the epoch search criteria [{}, {}] returns null, available epochs are: {}".format(
+            params.search_start_epoch, params.search_end_epoch, epoch_numbers)
 
         first = True
         for epoch in filtered_epoch_numbers:

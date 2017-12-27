@@ -70,7 +70,7 @@ def batcher(params, batch):
 
 
 def write_to_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14']
+    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14', "ACC_AVG"]
     acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
@@ -79,16 +79,21 @@ def write_to_csv(file_name, epoch, results_transfer, print_header=False):
         # then process result_transfer to print to file
         # since each test has different dictionary entry, we process them separately...
         results = ['Epoch {}'.format(epoch)]
+        acc_s = []
         for h in acc_header:
             acc = results_transfer[h]['acc']
+            acc_s.append(acc)
             results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later
         pear = results_transfer['SICKRelatedness']['pearson']
         results.append("{0:.4f}".format(pear))
         acc = results_transfer['SICKEntailment']['acc']
+        acc_s.append(acc)
         results.append("{0:.2f}".format(acc))
 
         mprc_acc = results_transfer['MRPC']['acc']
         mprc_f1 = results_transfer['MRPC']['f1']
+
+        acc_s.append(mprc_acc)
 
         results.append("{0:.2f}/{0:.2f}".format(mprc_acc, mprc_f1))
 
@@ -96,6 +101,9 @@ def write_to_csv(file_name, epoch, results_transfer, print_header=False):
         sts14_pear_mean = results_transfer['STS14']['all']['pearson']['mean']
 
         results.append("{0:.4f}/{0:.4f}".format(sts14_pear_wmean, sts14_pear_mean))
+
+        mean_acc = sum(acc_s) / float(len(acc_s))
+        results.append("{0:.4f}".format(mean_acc))
 
         writer.writerow(results)
 

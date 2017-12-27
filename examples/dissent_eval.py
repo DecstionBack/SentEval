@@ -84,8 +84,8 @@ def write_to_csv(file_name, epoch, results_transfer, print_header=False):
             results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later
         pear = results_transfer['SICKRelatedness']['pearson']
         results.append("{0:.4f}".format(pear))
-        pear = results_transfer['SICKEntailment']['pearson']
-        results.append("{0:.4f}".format(pear))
+        acc = results_transfer['SICKEntailment']['acc']
+        results.append("{0:.2f}".format(acc))
 
         mprc_acc = results_transfer['MRPC']['acc']
         mprc_f1 = results_transfer['MRPC']['f1']

@@ -69,8 +69,8 @@ def batcher(params, batch):
     return embeddings
 
 
-def write_to_csv(file_name, results_transfer, print_header=False):
-    header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14']
+def write_to_csv(file_name, epoch, results_transfer, print_header=False):
+    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14']
     acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
@@ -78,7 +78,7 @@ def write_to_csv(file_name, results_transfer, print_header=False):
             writer.writerow(header)
         # then process result_transfer to print to file
         # since each test has different dictionary entry, we process them separately...
-        results = []
+        results = ['Epoch {}'.format(epoch)]
         for h in acc_header:
             acc = results_transfer[h]['acc']
             results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later

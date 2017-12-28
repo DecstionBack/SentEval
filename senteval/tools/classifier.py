@@ -51,10 +51,10 @@ class PyTorchClassifier(object):
             devX, devy = X[devidx], y[devidx]
 
         if not self.cudaEfficient:
-            trainX = torch.FloatTensor(trainX).cuda(0)
-            trainy = torch.LongTensor(trainy).cuda(0)
-            devX = torch.FloatTensor(devX).cuda(0)
-            devy = torch.LongTensor(devy).cuda(0)
+            trainX = torch.FloatTensor(trainX).cuda()
+            trainy = torch.LongTensor(trainy).cuda()
+            devX = torch.FloatTensor(devX).cuda()
+            devy = torch.LongTensor(devy).cuda()
         else:
             trainX = torch.FloatTensor(trainX)
             trainy = torch.LongTensor(trainy)
@@ -171,8 +171,8 @@ class LogReg(PyTorchClassifier):
                                              batch_size, seed, cudaEfficient)
         self.model = nn.Sequential(
             nn.Linear(self.inputdim, self.nclasses),
-        ).cuda(0)
-        self.loss_fn = nn.CrossEntropyLoss().cuda(0)
+        ).cuda()
+        self.loss_fn = nn.CrossEntropyLoss().cuda()
         self.loss_fn.size_average = False
         self.optimizer = optim.Adam(self.model.parameters(),
                                     weight_decay=self.l2reg)
@@ -199,9 +199,9 @@ class MLP(PyTorchClassifier):
             nn.BatchNorm1d(self.hiddendim),
             nn.PReLU(),
             nn.Linear(self.hiddendim, self.nclasses),
-            ).cuda(0)
+            ).cuda()
 
-        self.loss_fn = nn.CrossEntropyLoss().cuda(0)
+        self.loss_fn = nn.CrossEntropyLoss().cuda()
         self.loss_fn.size_average = False
         self.optimizer = optim.Adam(self.model.parameters(),
                                     weight_decay=self.l2reg)

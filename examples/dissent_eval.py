@@ -139,6 +139,7 @@ if __name__ == "__main__":
     # ['8', '7', '9', '3', '11', '2', '1', '5', '4', '6']
     # this is discontinuous :)
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
+    epoch_numbers = sorted(epoch_numbers)  # now sorted
 
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:

@@ -18,13 +18,13 @@ sys.setdefaultencoding('utf-8')
 
 # Set PATHs
 #GLOVE_PATH = '/deep/u/anie/glove/glove.840B.300d.txt'
-GLOVE_PATH = '/home/anie/Documents/discourse/data/glove.6B/glove.840B.300d.txt'
+GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
 #PATH_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
-PATH_SENTEVAL = '/home/anie/Documents/SentEval'
+PATH_SENTEVAL = '/home/anie/SentEval'
 #PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
-PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
+PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
 #MODEL_PATH = 'infersent.allnli.pickle'
-MODEL_PATH = 'infersent_all_2048.pickle'
+MODEL_PATH = 'infersent.allnli.pickle'
 
 assert os.path.isfile(MODEL_PATH) and os.path.isfile(GLOVE_PATH), \
     'Set MODEL and GloVe PATHs'

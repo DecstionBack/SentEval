@@ -222,6 +222,7 @@ class DisSent(nn.Module):
         self.enc_lstm_dim = config['enc_lstm_dim']
         self.encoder_type = config['encoder_type']
         self.dpout_fc = config['dpout_fc']
+        self.tied_weights = config['tied_weights']
 
         self.encoder = eval(self.encoder_type)(config)
         self.inputdim = 5 * 2 * self.enc_lstm_dim

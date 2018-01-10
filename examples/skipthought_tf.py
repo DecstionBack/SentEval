@@ -17,9 +17,9 @@ import sys
 import tensorflow as tf
 
 # Set PATHs
-PATH_TO_SENTEVAL = '/home/anie/Documents/SentEval'
-PATH_TO_DATA = '/home/anie/Documents/SentEval/data/senteval_data/'
-PATH_TO_SKIPTHOUGHT = '/home/anie/Documents/models/skip_thoughts'
+PATH_TO_SENTEVAL = '/home/anie/SentEval'
+PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
+PATH_TO_SKIPTHOUGHT = '/home/anie/models/research/skip_thoughts'
 
 sys.path.insert(0, PATH_TO_SENTEVAL)
 sys.path.insert(0, PATH_TO_SKIPTHOUGHT)
@@ -29,17 +29,20 @@ from skip_thoughts import encoder_manager
 
 import senteval
 
-cluster = "cresta"
+cluster = "arthur"
 
 if cluster == "deep":
     VOCAB_FILE = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/vocab.txt"
     EMBEDDING_MATRIX_FILE = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/embeddings.npy"
     CHECKPOINT_PATH = "/deep/u/anie/skip_thoughts/skip_thoughts_bi_2017_02_16/model.ckpt-500008"
-else:
+elif cluster == "cresta":
     VOCAB_FILE = "/home/anie/Documents/models/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/vocab.txt"
-    EMBEDDING_MATRIX_FILE = "/home/anie/Documents/models/skip_thoughts/pretrained//skip_thoughts_bi_2017_02_16/embeddings.npy"
-    CHECKPOINT_PATH = "/home/anie/Documents/models/skip_thoughts/pretrained//skip_thoughts_bi_2017_02_16/model.ckpt-500008"
-
+    EMBEDDING_MATRIX_FILE = "/home/anie/Documents/models/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/embeddings.npy"
+    CHECKPOINT_PATH = "/home/anie/Documents/models/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/model.ckpt-500008"
+else:
+    VOCAB_FILE = "/home/anie/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/vocab.txt"
+    EMBEDDING_MATRIX_FILE = "/home/anie/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/embeddings.npy"
+    CHECKPOINT_PATH = "/home/anie/skip_thoughts/pretrained/skip_thoughts_bi_2017_02_16/model.ckpt-500008"
 
 def prepare(params, samples):
     return

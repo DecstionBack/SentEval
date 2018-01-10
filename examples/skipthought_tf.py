@@ -65,17 +65,21 @@ params_senteval = dotdict(params_senteval)
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 if __name__ == "__main__":
-    encoder = encoder_manager.EncoderManager()
-
-    encoder.load_model(configuration.model_config(bidirectional_encoder=True),
-                       vocabulary_file=VOCAB_FILE,
-                       embedding_matrix_file=EMBEDDING_MATRIX_FILE,
-                       checkpoint_path=CHECKPOINT_PATH)
 
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
 
-    params_senteval.encoder = encoder
-    se = senteval.SentEval(params_senteval, batcher, prepare)
-    # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-    #          'SICKEntailment', 'MRPC', 'STS14'])
-    se.eval(['DIS', 'SNLI'])
+    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
+        encoder = encoder_manager.EncoderManager()
+
+        encoder.load_model(configuration.model_config(bidirectional_encoder=True),
+                           vocabulary_file=VOCAB_FILE,
+                           embedding_matrix_file=EMBEDDING_MATRIX_FILE,
+                           checkpoint_path=CHECKPOINT_PATH)
+
+
+
+        params_senteval.encoder = encoder
+        se = senteval.SentEval(params_senteval, batcher, prepare)
+        # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+        #          'SICKEntailment', 'MRPC', 'STS14'])
+        se.eval(['DIS'])

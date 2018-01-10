@@ -27,10 +27,7 @@ parser.add_argument("--outputmodelname", type=str, default='dis-model')
 parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all model's gpu to this id")
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
-parser.add_argument("--no_print", action='store_true', help="Not printing to files, "
-                                                            "but will still log to files"
-                                                            ". Need to be used when only run on a subset"
-                                                            "of tasks.")
+parser.add_argument("--snli_dis", action='store_true', help="run on SNLI and DIS")
 
 params, _ = parser.parse_known_args()
 
@@ -73,8 +70,25 @@ def batcher(params, batch):
     return embeddings
 
 
+def write_to_dis_snli_csv(file_name, epoch, results_transfer, print_header=False):
+    header = ['Epoch', 'SNLI', 'DIS']
+    with open(file_name, 'a') as csvfile:
+        writer = csv.writer(csvfile)
+        if print_header:
+            writer.writerow(header)
+        results = ['Epoch {}'.format(epoch)]
+        snli_acc = results_transfer['SNLI']['acc']
+        dis_acc = results_transfer['DIS']['acc']
+
+        results.append("{0:.2f}".format(snli_acc))
+        results.append("{0:.2f}".format(dis_acc))
+
+        writer.writerow(results)
+
+
 def write_to_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14', "ACC_AVG"]
+    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14',
+              "ACC_AVG"]
     acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
@@ -118,7 +132,7 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 
 # define transfer tasks
 transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-                  'SICKEntailment', 'MRPC', 'STS14']
+                  'SICKEntailment', 'MRPC', 'STS14'] if not params.dis_snli else ['SNLI', 'DIS']
 
 # define senteval params
 params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
@@ -145,6 +159,8 @@ if __name__ == "__main__":
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
     epoch_numbers = sorted(epoch_numbers)  # now sorted
 
+    csv_file_name = 'senteval_results.csv' if len(transfer_tasks) == 14 else "_".join(transfer_tasks) + ".csv"
+
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:
         # Load model
@@ -160,7 +176,8 @@ if __name__ == "__main__":
     else:
         filtered_epoch_numbers = filter(lambda i: params.search_start_epoch <= i <= params.search_end_epoch,
                                         epoch_numbers)
-        assert len(filtered_epoch_numbers) >= 1, "the epoch search criteria [{}, {}] returns null, available epochs are: {}".format(
+        assert len(
+            filtered_epoch_numbers) >= 1, "the epoch search criteria [{}, {}] returns null, available epochs are: {}".format(
             params.search_start_epoch, params.search_end_epoch, epoch_numbers)
 
         first = True
@@ -178,8 +195,9 @@ if __name__ == "__main__":
 
             logging.info(results_transfer)
 
-            if params.no_print:
-                continue
             # now we sift through the result dictionary and save results to csv
-            write_to_csv(pjoin(params.outputdir, 'senteval_results.csv'), epoch, results_transfer, first)
+            if len(transfer_tasks) == 14:
+                write_to_csv(pjoin(params.outputdir, "senteval_results.csv"), epoch, results_transfer, first)
+            else:
+                write_to_dis_snli_csv(pjoin(params.outputdir, csv_file_name), epoch, results_transfer, first)
             first = False

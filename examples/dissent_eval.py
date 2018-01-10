@@ -27,6 +27,10 @@ parser.add_argument("--outputmodelname", type=str, default='dis-model')
 parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all model's gpu to this id")
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
+parser.add_argument("--no_print", action='store_true', help="Not printing to files, "
+                                                            "but will still log to files"
+                                                            ". Need to be used when only run on a subset"
+                                                            "of tasks.")
 
 params, _ = parser.parse_known_args()
 
@@ -174,6 +178,8 @@ if __name__ == "__main__":
 
             logging.info(results_transfer)
 
+            if params.no_print:
+                continue
             # now we sift through the result dictionary and save results to csv
             write_to_csv(pjoin(params.outputdir, 'senteval_results.csv'), epoch, results_transfer, first)
             first = False

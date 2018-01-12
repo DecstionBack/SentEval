@@ -85,7 +85,8 @@ if __name__ == "__main__":
     # load Dis model
     model_name = params.outputmodelname + '-{}.pickle'.format(params.best_epoch)
     model_path = pjoin(params.outputdir, model_name)
-    params_senteval.dissent = torch.load(model_path, map_location=map_locations)
+    dissent = torch.load(model_path, map_location=map_locations)
+    params_senteval.dissent = dissent.encoder
     params_senteval.dissent.set_glove_path(GLOVE_PATH)
 
     # Load InferSent model

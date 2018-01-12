@@ -83,8 +83,9 @@ if __name__ == "__main__":
             map_locations['cuda:{}'.format(d)] = "cuda:{}".format(0)
 
     # load Dis model
-    DIS_MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
-    params_senteval.dissent = torch.load(MODEL_PATH, map_location=map_locations)
+    model_name = params.outputmodelname + '-{}.pickle'.format(params.best_epoch)
+    model_path = pjoin(params.outputdir, model_name)
+    params_senteval.dissent = torch.load(model_path, map_location=map_locations)
     params_senteval.dissent.set_glove_path(GLOVE_PATH)
 
     # Load InferSent model

@@ -27,7 +27,7 @@ parser.add_argument("--outputmodelname", type=str, default='dis-model')
 parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all model's gpu to this id")
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
-parser.add_argument("--snli_dis", action='store_true', help="run on SNLI and DIS")
+parser.add_argument("--dis", action='store_true', help="run on DIS")
 
 params, _ = parser.parse_known_args()
 
@@ -71,16 +71,14 @@ def batcher(params, batch):
 
 
 def write_to_dis_snli_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['Epoch', 'SNLI', 'DIS']
+    header = ['Epoch', 'DIS']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
         if print_header:
             writer.writerow(header)
         results = ['Epoch {}'.format(epoch)]
-        snli_acc = results_transfer['SNLI']['acc']
         dis_acc = results_transfer['DIS']['acc']
 
-        results.append("{0:.2f}".format(snli_acc))
         results.append("{0:.2f}".format(dis_acc))
 
         writer.writerow(results)

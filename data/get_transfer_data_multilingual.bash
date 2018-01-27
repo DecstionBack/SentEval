@@ -17,6 +17,7 @@ mkdir $data_path
 # from http://alt.qcri.org/semeval2016/task5/index.php?id=data-and-tools
 # (requires login)
 # Subtask 1, Part B
+python process_ABSA_SP.py
 
 ## --------- STS SPANISH ------------------------------
 

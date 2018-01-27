@@ -130,7 +130,7 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 
 # define transfer tasks
 transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-                  'SICKEntailment', 'MRPC', 'STS14'] if not params.snli_dis else ['SNLI', 'DIS']
+                  'SICKEntailment', 'MRPC', 'STS14'] if not params.dis else ['DIS']
 
 # define senteval params
 params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,

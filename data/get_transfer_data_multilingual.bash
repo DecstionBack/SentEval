@@ -18,6 +18,7 @@ mkdir $data_path
 # (requires login)
 # Subtask 1, Part B
 python process_ABSA_SP.py
+python process_ABSA_CH.py
 
 ## --------- STS SPANISH ------------------------------
 

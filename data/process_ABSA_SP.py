@@ -24,6 +24,9 @@ w.close()
 
 w = open(output_file, "a")
 for d in data:
+	d = {k: d[k] for k in ["category", "polarity", "text"]}
+	if "\t".join(d.keys()) != "category\tpolarity\ttext":
+		print d.keys()
 	line = "\t".join(d.values()).encode("utf-8") + "\n"
 	w.write(line)
 w.close()

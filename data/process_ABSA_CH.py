@@ -39,6 +39,9 @@ for subtask in subtasks:
 
 		w = open(output_file, "a")
 		for d in data:
+			if "\t".join(d.keys()) != "category\tpolarity\ttext":
+				print d.keys()
 			line = "\t".join(d.values()).encode("utf-8") + "\n"
 			w.write(line)
 		w.close()
+

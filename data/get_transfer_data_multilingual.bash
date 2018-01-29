@@ -87,6 +87,11 @@ do
     done
 done
 
+mv STS_SP/STS14/sts.gs.li65.txt STS_SP/STS14/STS.gs.li65.txt
+mv STS_SP/STS14/sts.input.li65.txt STS_SP/STS14/STS.input.li65.txt
+
+python process_STS_SP.py
+
 ## could create alternative supervised version from this.
 ## STSBenchmark has 5749 training examples, 1379 test, and 1500 dev
 ## we only have 1869 total examples

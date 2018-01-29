@@ -22,6 +22,7 @@ from senteval.sts import STS12Eval, STS13Eval, STS14Eval, STS15Eval, STS16Eval, 
 from senteval.sst import SSTBinaryEval
 from senteval.rank import ImageCaptionRetrievalEval
 from senteval.dis import DISEval
+from senteval.ABSA_CH import ABSA_CHEval
 
 class SentEval(object):
     def __init__(self, params, batcher, prepare=None):
@@ -54,7 +55,8 @@ class SentEval(object):
         self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC',
                            'SICKRelatedness', 'SICKEntailment', 'STSBenchmark',
                            'SNLI', 'ImageCaptionRetrieval', 'STS12', 'STS13',
-                           'STS14', 'STS15', 'STS16', 'DIS']
+                           'STS14', 'STS15', 'STS16', 'DIS', 'ABSA_CH', 'ABSA_SP',
+                           'STS_SP']
 
     def eval(self, name):
         # evaluate on evaluation [name], either takes string or list of strings
@@ -99,6 +101,8 @@ class SentEval(object):
         elif name == 'ImageCaptionRetrieval':
             self.evaluation = ImageCaptionRetrievalEval(tpath + '/COCO',
                                                         seed=self.params.seed)
+        elif name == 'ABSA_CH':
+            self.evaluation = ABSA_CHEval(tpath + '/ABSA_CH', seed=self.params.seed)
 
         self.params.current_task = name
         self.evaluation.do_prepare(self.params, self.prepare)

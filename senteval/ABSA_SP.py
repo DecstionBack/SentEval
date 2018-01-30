@@ -43,7 +43,7 @@ class ABSA_SPEval(object):
 
     def loadFile(self, fpath):
         absa_data = {'X': [], 'y': []}
-        tgt2idx = {'negative': 0, 'positive': 1}
+        tgt2idx = {'negative': 0, 'positive': 1, 'neutral':2}
         # no longer latin-1
         with io.open(fpath, 'r', encoding='utf-8') as f:
             for line in f:
@@ -91,7 +91,7 @@ class ABSA_SPEval(object):
         test_embeddings = np.vstack(test_embeddings)
         logging.info('Computed test embeddings')
 
-        config_classifier = {'nclasses': 2, 'seed': self.seed,
+        config_classifier = {'nclasses': 3, 'seed': self.seed,
                              'usepytorch': params.usepytorch,
                              'classifier': params.classifier,
                              'nhid': params.nhid, 'kfold': params.kfold}

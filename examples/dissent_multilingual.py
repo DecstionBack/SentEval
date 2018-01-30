@@ -72,7 +72,7 @@ def batcher(params, batch):
 
 
 def write_to_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['ABSA_CH:Phone', 'ABSA_CH:Camera'] if params.lang == 'CH' else ['ABSA_SP:Restaurant', 'STS_SP']
+    header = ['Epoch', 'ABSA_CH:Phone', 'ABSA_CH:Camera'] if params.lang == 'CH' else ['Epoch', 'ABSA_SP:Restaurant', 'STS_SP']
     acc_header = ['ABSA_CH:Phone', 'ABSA_CH:Camera'] if params.lang == 'CH' else ['ABSA_SP:Restaurant']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)

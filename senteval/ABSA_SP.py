@@ -57,7 +57,7 @@ class ABSA_SPEval(object):
     def run(self, params, batcher):
         dict = self.single_run(params, batcher,
                                    self.train['X'], self.train['y'],
-                                   self.test['X'], self.test['y'], field="Spanish")
+                                   self.test['X'], self.test['y'], field="Restaurant")
         return dict
 
     def single_run(self, params, batcher, train_X, train_y, test_X, test_y, field):

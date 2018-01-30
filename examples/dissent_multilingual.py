@@ -90,8 +90,8 @@ def write_to_csv(file_name, epoch, results_transfer, print_header=False):
             results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later
 
         if params.lang == "SP":
-            stsbenchmark_dev_pear = results_transfer['STS_SP']['devpearson']
-            stsbenchmark_test_pear = results_transfer['STS_SP']['pearson']
+            stsbenchmark_dev_pear = results_transfer['STS_SP'][u'devpearson']
+            stsbenchmark_test_pear = results_transfer['STS_SP'][u'pearson']
 
             results.append("{0:.4f}/{0:.4f}".format(stsbenchmark_dev_pear, stsbenchmark_test_pear))
 

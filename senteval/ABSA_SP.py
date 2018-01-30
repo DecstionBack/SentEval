@@ -102,6 +102,6 @@ class ABSA_SPEval(object):
                               config_classifier)
         devacc, testacc, _ = clf.run()
         logging.debug('\n' + field + ' Dev acc : {0} Test acc : {1} \
-            for ABSA_CH\n'.format(devacc, testacc))
+            for ABSA_SP\n'.format(devacc, testacc))
         return {'{} devacc'.format(field): devacc, '{} acc'.format(field): testacc,
                 '{} ndev'.format(field): len(train_X), '{} ntest'.format(field): len(test_X)}

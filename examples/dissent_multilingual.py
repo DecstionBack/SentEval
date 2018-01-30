@@ -72,18 +72,20 @@ def batcher(params, batch):
 
 
 def write_to_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['ABSA_CH'] if params.lang == 'CH' else ['ABSA_SP', 'STS_SP']
+    header = ['ABSA_CH:Phone', 'ABSA_CH:Camera'] if params.lang == 'CH' else ['ABSA_SP:Restaurant', 'STS_SP']
     acc_header = ['ABSA_CH'] if params.lang == 'CH' else ['ABSA_SP']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
         if print_header:
             writer.writerow(header)
+
         # then process result_transfer to print to file
         # since each test has different dictionary entry, we process them separately...
         results = ['Epoch {}'.format(epoch)]
         acc_s = []
         for h in acc_header:
-            acc = results_transfer[h]['acc']
+            h, field = h.split(":")
+            acc = results_transfer[h]['{} acc'.format(field)]
             acc_s.append(acc)
             results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later
 

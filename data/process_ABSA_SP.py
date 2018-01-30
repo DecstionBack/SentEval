@@ -20,7 +20,9 @@ def parse_file(input_file, output_file):
 							data.append({"category": opinion_data["category"], "polarity": polarities[0], "text": text})
 						elif all([p=="positive" for p in polarities]):
 							data.append({"category": opinion_data["category"], "polarity": "positive", "text": text})
-						elif not any([p=="positive" for p in polarities]):
+						elif all([p=="neutral" for p in polarities]):
+							data.append({"category": opinion_data["category"], "polarity": "neutral", "text": text})
+						elif not any([p=="negative" for p in polarities]):
 							data.append({"category": opinion_data["category"], "polarity": "negative", "text": text})			
 
 	w = open(output_file, "w")

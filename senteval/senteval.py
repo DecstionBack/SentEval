@@ -23,6 +23,7 @@ from senteval.sst import SSTBinaryEval
 from senteval.rank import ImageCaptionRetrievalEval
 from senteval.dis import DISEval
 from senteval.ABSA_CH import ABSA_CHEval
+from senteval.ABSA_SP import ABSA_SPEval
 
 class SentEval(object):
     def __init__(self, params, batcher, prepare=None):
@@ -103,6 +104,10 @@ class SentEval(object):
                                                         seed=self.params.seed)
         elif name == 'ABSA_CH':
             self.evaluation = ABSA_CHEval(tpath + '/ABSA_CH', seed=self.params.seed)
+        elif name == 'ABSA_SP':
+            self.evaluation = ABSA_SPEval(tpath + '/ABSA_SP', seed=self.params.seed)
+        elif name == 'STS_SP':
+            self.evaluation = STSBenchmarkEval(tpath + '/STS_SP/STSBenchmark', seed=self.params.seed)
 
         self.params.current_task = name
         self.evaluation.do_prepare(self.params, self.prepare)

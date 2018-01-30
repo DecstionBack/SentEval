@@ -37,7 +37,6 @@ def merge_two_dicts(x, y):
     return z
 
 
-# TODO: need about 2 hours on this...crap...
 class ABSA_CHEval(object):
     def __init__(self, task_path, seed=1111):
         logging.info('***** Transfer task : ABSA_CH *****\n\n')

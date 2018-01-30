@@ -18,7 +18,7 @@ from senteval.trec import TRECEval
 from senteval.sick import SICKRelatednessEval, SICKEntailmentEval
 from senteval.mrpc import MRPCEval
 from senteval.sts import STS12Eval, STS13Eval, STS14Eval, STS15Eval, STS16Eval, \
-    STSBenchmarkEval
+    STSBenchmarkEval, STS_SPBenchmarkEval
 from senteval.sst import SSTBinaryEval
 from senteval.rank import ImageCaptionRetrievalEval
 from senteval.dis import DISEval
@@ -107,7 +107,7 @@ class SentEval(object):
         elif name == 'ABSA_SP':
             self.evaluation = ABSA_SPEval(tpath + '/ABSA_SP', seed=self.params.seed)
         elif name == 'STS_SP':
-            self.evaluation = STSBenchmarkEval(tpath + '/STS_SP/STSBenchmark', seed=self.params.seed)
+            self.evaluation = STS_SPBenchmarkEval(tpath + '/STS_SP/STSBenchmark', seed=self.params.seed)
 
         self.params.current_task = name
         self.evaluation.do_prepare(self.params, self.prepare)

@@ -172,3 +172,24 @@ class STSBenchmarkEval(SICKRelatednessEval):
 
         sick_data['y'] = [float(s) for s in sick_data['y']]
         return sick_data
+
+class STS_SPBenchmarkEval(SICKRelatednessEval):
+    def __init__(self, task_path, seed=1111):
+        logging.debug('\n\n***** Transfer task : STSBenchmark*****\n\n')
+        self.seed = seed
+        train = self.loadFile(os.path.join(task_path, 'sts-train.csv'))
+        dev = self.loadFile(os.path.join(task_path, 'sts-dev.csv'))
+        test = self.loadFile(os.path.join(task_path, 'sts-test.csv'))
+        self.sick_data = {'train': train, 'dev': dev, 'test': test}
+
+    def loadFile(self, fpath):
+        sick_data = {'X_A': [], 'X_B': [], 'y': []}
+        with io.open(fpath, 'r', encoding='utf-8') as f:
+            for line in f:
+                text = line.strip().split('\t')
+                sick_data['X_A'].append(text[1].split())
+                sick_data['X_B'].append(text[2].split())
+                sick_data['y'].append(text[0])
+
+        sick_data['y'] = [float(s) for s in sick_data['y']]
+        return sick_data

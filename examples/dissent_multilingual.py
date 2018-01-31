@@ -12,6 +12,7 @@ from exutil import dotdict
 import argparse
 import logging
 from os.path import join as pjoin
+from dissent import DisSent
 
 import logging
 
@@ -25,6 +26,7 @@ parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all mo
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
 parser.add_argument("--lang", type=str, default='CH', help="CH|SP, change language")
+parser.add_argument("--random", action='store_true', help="Use randomly initialized network")
 
 params, _ = parser.parse_known_args()
 
@@ -135,10 +137,30 @@ if __name__ == "__main__":
 
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:
-        # Load model
-        MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
+        if not params.random:
+            # Load model
+            MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
+            params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
+        else:
+            # initialize randomly
+            config_dis_model = {
+                'word_emb_dim': 300,
+                'n_classes': 5,
+                'enc_lstm_dim': 4096,
+                'n_enc_layers': 1,
+                'dpout_emb': 0.,
+                'dpout_model': 0.,
+                'dpout_fc': 0.,
+                'fc_dim': 512,
+                'bsize': 32,
+                'pool_type': 'max',
+                'encoder_type': 'BLSTMEncoder',
+                'tied_weights': False,
+                'use_cuda': True,
+            }
+            dissent = DisSent(config_dis_model)
+            params_senteval.infersent = dissent.encoder
 
-        params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
         params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
         se = senteval.SentEval(params_senteval, batcher, prepare)

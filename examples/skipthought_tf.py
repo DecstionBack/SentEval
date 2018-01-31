@@ -66,9 +66,10 @@ logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 if __name__ == "__main__":
 
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
+    config_gpu = tf.ConfigProto()
+    config_gpu.gpu_options.allow_growth = True
 
-    with tf.Graph().as_default(), tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as session:
+    with tf.Graph().as_default(), tf.Session(config=config_gpu) as session:
         encoder = encoder_manager.EncoderManager()
 
         encoder.load_model(configuration.model_config(bidirectional_encoder=True),

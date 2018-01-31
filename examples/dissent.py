@@ -282,32 +282,6 @@ class RandomEncoder(nn.Module):
         # sent: Variable(seqlen x bsize x worddim)
         sent, sent_len = sent_tuple
 
-        # Sort by length (keep idx)
-        # sent_len, idx_sort = np.sort(sent_len)[::-1], np.argsort(-sent_len)
-        # idx_unsort = np.argsort(idx_sort)
-        #
-        # idx_sort = torch.from_numpy(idx_sort).cuda() if self.is_cuda() \
-        #     else torch.from_numpy(idx_sort)
-        # sent = sent.index_select(1, Variable(idx_sort))
-        #
-        # # Handling padding in Recurrent Networks
-        # sent_packed = nn.utils.rnn.pack_padded_sequence(sent, sent_len)
-        # sent_output = self.enc_lstm(sent_packed)[0]  # seqlen x batch x 2*nhid
-        # sent_output = nn.utils.rnn.pad_packed_sequence(sent_output)[0]
-        #
-        # # Un-sort by length
-        # idx_unsort = torch.from_numpy(idx_unsort).cuda() if self.is_cuda() \
-        #     else torch.from_numpy(idx_unsort)
-        # sent_output = sent_output.index_select(1, Variable(idx_unsort))
-        #
-        # # Pooling
-        # if self.pool_type == "mean":
-        #     sent_len = Variable(torch.FloatTensor(sent_len)).unsqueeze(1).cuda()
-        #     emb = torch.sum(sent_output, 0).squeeze(0)
-        #     emb = emb / sent_len.expand_as(emb)
-        # elif self.pool_type == "max":
-        #     emb = torch.max(sent_output, 0)[0]
-
         _, bsize, _ = sent.shape
         emb = np.random.randn(bsize, self.enc_lstm_dim)
 
@@ -439,10 +413,13 @@ class RandomEncoder(nn.Module):
 
     def encode(self, sentences, bsize=64, tokenize=True, verbose=False):
         tic = time.time()
+        sentences, lengths, idx_sort = self.prepare_samples(
+            sentences, bsize, tokenize, verbose)
 
         embeddings = []
         for stidx in range(0, len(sentences), bsize):
-            batch = np.random.randn(bsize, self.enc_lstm_dim)
+
+            batch = np.random.randn(len(sentences[stidx:stidx + bsize]), self.enc_lstm_dim)
             embeddings.append(batch)
         embeddings = np.vstack(embeddings)
 

@@ -143,6 +143,7 @@ if __name__ == "__main__":
             params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
         else:
             # initialize randomly
+            logging.info("initialize network randomly")
             config_dis_model = {
                 'word_emb_dim': 300,
                 'n_classes': 5,

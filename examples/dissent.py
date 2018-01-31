@@ -308,7 +308,7 @@ class RandomEncoder(nn.Module):
         # elif self.pool_type == "max":
         #     emb = torch.max(sent_output, 0)[0]
 
-        _, bsize = sent.shape
+        _, bsize, _ = sent.shape
         emb = np.random.randn(bsize, self.enc_lstm_dim)
 
         return emb

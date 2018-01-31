@@ -12,7 +12,7 @@ from exutil import dotdict
 import argparse
 import logging
 from os.path import join as pjoin
-from dissent import DisSent
+from dissent import RandomEncoder
 
 import logging
 
@@ -159,8 +159,7 @@ if __name__ == "__main__":
                 'tied_weights': False,
                 'use_cuda': True,
             }
-            dissent = DisSent(config_dis_model)
-            params_senteval.infersent = dissent.encoder
+            params_senteval.infersent = RandomEncoder(config_dis_model)
 
         params_senteval.infersent.set_glove_path(GLOVE_PATH)
 

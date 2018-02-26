@@ -22,6 +22,7 @@ parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search f
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
 parser.add_argument("--dis", action='store_true', help="run on DIS")
 parser.add_argument("--pdtb", action='store_true', help="run on PDTB")
+parser.add_argument("--mlp", action='store_true', help="use MLP")
 
 params, _ = parser.parse_known_args()
 
@@ -137,8 +138,13 @@ else:
                       'SICKEntailment', 'MRPC', 'STS14']
 
 # define senteval params
-params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
-                           'seed': 1111, 'kfold': 5})
+if params.mlp:
+    # keep nhid the same as DisSent model (otherwise we can try 1024)
+    params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
+                               'seed': 1111, 'kfold': 5, 'classifier': 'MLP', 'nhid': 512})
+else:
+    params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
+                               'seed': 1111, 'kfold': 5})
 
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
@@ -161,7 +167,10 @@ if __name__ == "__main__":
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
     epoch_numbers = sorted(epoch_numbers)  # now sorted
 
-    csv_file_name = 'senteval_results.csv' if len(transfer_tasks) == 10 else "_".join(transfer_tasks) + ".csv"
+    if not params.mlp:
+        csv_file_name = 'senteval_results.csv' if len(transfer_tasks) == 10 else "_".join(transfer_tasks) + ".csv"
+    else:
+        csv_file_name = 'senteval_results_mlp.csv' if len(transfer_tasks) == 10 else "_".join(transfer_tasks) + "_mlp" + ".csv"
 
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:

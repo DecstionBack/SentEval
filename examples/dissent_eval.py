@@ -21,6 +21,7 @@ parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all mo
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
 parser.add_argument("--dis", action='store_true', help="run on DIS")
+parser.add_argument("--pdtb", action='store_true', help="run on PDTB")
 
 params, _ = parser.parse_known_args()
 
@@ -63,16 +64,21 @@ def batcher(params, batch):
     return embeddings
 
 
-def write_to_dis_snli_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['Epoch', 'DIS']
+def write_to_dis_csv(file_name, epoch, results_transfer, print_header=False):
+    header = ['Epoch', 'Result']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
         if print_header:
             writer.writerow(header)
         results = ['Epoch {}'.format(epoch)]
-        dis_acc = results_transfer['DIS']['acc']
+        if params.dis:
+            acc = results_transfer['DIS']['acc']
+        elif params.pdtb:
+            acc = results_transfer['PDTB']['acc']
+        else:
+            raise Exception("must be one of two: dis or pdtb")
 
-        results.append("{0:.2f}".format(dis_acc))
+        results.append("{0:.2f}".format(acc))
 
         writer.writerow(results)
 
@@ -122,8 +128,13 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 """
 
 # define transfer tasks
-transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
-                  'SICKEntailment', 'MRPC', 'STS14'] if not params.dis else ['DIS']
+if params.dis:
+    transfer_tasks = ['DIS']
+elif params.pdtb:
+    transfer_tasks = ['PDTB']
+else:
+    transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+                      'SICKEntailment', 'MRPC', 'STS14']
 
 # define senteval params
 params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
@@ -150,7 +161,7 @@ if __name__ == "__main__":
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
     epoch_numbers = sorted(epoch_numbers)  # now sorted
 
-    csv_file_name = 'senteval_results.csv' if len(transfer_tasks) == 14 else "_".join(transfer_tasks) + ".csv"
+    csv_file_name = 'senteval_results.csv' if len(transfer_tasks) == 10 else "_".join(transfer_tasks) + ".csv"
 
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:
@@ -187,8 +198,8 @@ if __name__ == "__main__":
             logging.info(results_transfer)
 
             # now we sift through the result dictionary and save results to csv
-            if not params.dis:
+            if not params.dis or not params.pdtb:
                 write_to_csv(pjoin(params.outputdir, "senteval_results.csv"), epoch, results_transfer, first)
             else:
-                write_to_dis_snli_csv(pjoin(params.outputdir, csv_file_name), epoch, results_transfer, first)
+                write_to_dis_csv(pjoin(params.outputdir, csv_file_name), epoch, results_transfer, first)
             first = False

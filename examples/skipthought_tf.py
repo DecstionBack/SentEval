@@ -83,4 +83,5 @@ if __name__ == "__main__":
         se = senteval.SentEval(params_senteval, batcher, prepare)
         # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
         #          'SICKEntailment', 'MRPC', 'STS14'])
-        se.eval(['DIS'])
+        # se.eval(['DIS'])
+        se.eval(['PDTB'])

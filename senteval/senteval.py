@@ -24,6 +24,7 @@ from senteval.rank import ImageCaptionRetrievalEval
 from senteval.dis import DISEval
 from senteval.ABSA_CH import ABSA_CHEval
 from senteval.ABSA_SP import ABSA_SPEval
+from senteval.pdtb import PDTB_Eval
 
 class SentEval(object):
     def __init__(self, params, batcher, prepare=None):
@@ -95,6 +96,8 @@ class SentEval(object):
             self.evaluation = SNLIEval(tpath + '/SNLI', seed=self.params.seed)
         elif name == 'DIS':
             self.evaluation = DISEval(tpath + '/DIS', seed=self.params.seed)
+        elif name == 'PDTB':
+            self.evaluation = PDTB_Eval(tpath + '/PDTB', seed=self.params.seed)
         elif name in ['STS12', 'STS13', 'STS14', 'STS15', 'STS16']:
             fpath = name + '-en-test'
             self.evaluation = eval(name + 'Eval')(tpath + '/STS/' + fpath,

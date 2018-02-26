@@ -219,6 +219,7 @@ class SplitClassifier(object):
         self.maxepoch = None if 'maxepoch' not in config else \
             config['maxepoch']
         self.noreg = False if 'noreg' not in config else config['noreg']
+        self.bilinear = False if 'bilinear' not in config else config['bilinear']
 
     def run(self):
         logging.info('Training {0} with standard validation..'
@@ -233,11 +234,11 @@ class SplitClassifier(object):
                 if self.classifier == 'LogReg':
                     clf = LogReg(inputdim=self.featdim, nclasses=self.nclasses,
                                  l2reg=reg, seed=self.seed,
-                                 cudaEfficient=self.cudaEfficient)
+                                 cudaEfficient=self.cudaEfficient, bilinear=self.bilinear)
                 elif self.classifier == 'MLP':
                     clf = MLP(inputdim=self.featdim, hiddendim=self.nhid,
                               nclasses=self.nclasses, l2reg=reg,
-                              seed=self.seed, cudaEfficient=self.cudaEfficient)
+                              seed=self.seed, cudaEfficient=self.cudaEfficient, bilinear=self.bilinear)
                 # small hack : SNLI specific
                 if self.nepoches:
                     clf.nepoches = self.nepoches

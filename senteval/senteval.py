@@ -40,6 +40,9 @@ class SentEval(object):
         params.kfold = 5 if 'kfold' not in params else params.kfold
         self.params = params
 
+        # set up bilinear projection, with learnable matrix W
+        params.bilinear = False if 'bilinear' not in params else params.bilinear
+
         self.batcher = batcher
         if prepare:
             self.prepare = prepare

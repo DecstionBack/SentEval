@@ -81,7 +81,10 @@ class PDTB_Eval(object):
                 if len(batch1) == len(batch2) and len(batch1) > 0:
                     enc1 = batcher(params, batch1)
                     enc2 = batcher(params, batch2)
-                    enc_input.append(np.hstack((enc1, enc2, enc1 * enc2, enc1 - enc2, (enc1 + enc2) / 2.)))
+                    if params.bilinear:
+                        enc_input.append(np.hstack((enc1, enc2)))  # could also do a full feature vector then bilinear...
+                    else:
+                        enc_input.append(np.hstack((enc1, enc2, enc1 * enc2, enc1 - enc2, (enc1 + enc2) / 2.)))
                 if (ii * params.batch_size) % (20000 * params.batch_size) == 0:
                     logging.info("PROGRESS (encoding): %.2f%%" % (100 * ii / n_labels))
             self.X[key] = np.vstack(enc_input)
@@ -90,7 +93,7 @@ class PDTB_Eval(object):
         # change number of classes
         config_classifier = {'nclasses': len(dico_label), 'seed': self.seed, 'usepytorch': params.usepytorch, 'cudaEfficient': True, \
                              'classifier': params.classifier, 'nhid': params.nhid, 'maxepoch': 100, 'nepoches': 10,
-                             'noreg': False}
+                             'noreg': False, 'bilinear': params.bilinear}
         clf = SplitClassifier(self.X, self.y, config_classifier)
         devacc, testacc = clf.run()
         logging.debug('Dev acc : {0} Test acc : {1} for PDTB\n'.format(devacc, testacc))

@@ -45,8 +45,8 @@ class PyTorchClassifier(object):
             devX, devy = validation_data
         else:
             permutation = np.random.permutation(len(X))
-            trainidx = permutation[int(validation_split*len(X)):]
-            devidx = permutation[0:int(validation_split*len(X))]
+            trainidx = permutation[int(validation_split * len(X)):]
+            devidx = permutation[0:int(validation_split * len(X))]
             trainX, trainy = X[trainidx], y[trainidx]
             devX, devy = X[devidx], y[devidx]
 
@@ -103,7 +103,13 @@ class PyTorchClassifier(object):
                 if self.cudaEfficient:
                     Xbatch = Xbatch.cuda()
                     ybatch = ybatch.cuda()
-                output = self.model(Xbatch)
+
+                if not self.model.bilinear:
+                    output = self.model(Xbatch)
+                else:
+                    assert self.inputdim % 2 == 0  # hid dim must be even
+                    Xbatch_vec1, Xbatch_vec2 = torch.split(Xbatch, split_size=self.inputdim/2, dim=1)
+                    output = self.model(Xbatch_vec1, Xbatch_vec2)
                 # loss
                 loss = self.loss_fn(output, ybatch)
                 all_costs.append(loss.data[0])
@@ -166,12 +172,19 @@ Logistic Regression with Pytorch
 
 class LogReg(PyTorchClassifier):
     def __init__(self, inputdim, nclasses, l2reg=0., batch_size=64,
-                 seed=1111, cudaEfficient=False):
+                 seed=1111, cudaEfficient=False, bilinear=False):
         super(self.__class__, self).__init__(inputdim, nclasses, l2reg,
                                              batch_size, seed, cudaEfficient)
-        self.model = nn.Sequential(
-            nn.Linear(self.inputdim, self.nclasses),
-        ).cuda()
+        self.bilinear = bilinear
+        if bilinear:
+            self.model = nn.Sequential(
+                nn.Bilinear(self.inputdim, self.inputdim, self.inputdim),  # no dimension reduction at all
+                nn.Linear(self.inputdim, self.nclasses),
+            ).cuda()
+        else:
+            self.model = nn.Sequential(
+                nn.Linear(self.inputdim, self.nclasses),
+            ).cuda()
         self.loss_fn = nn.CrossEntropyLoss().cuda()
         self.loss_fn.size_average = False
         self.optimizer = optim.Adam(self.model.parameters(),
@@ -185,20 +198,33 @@ MLP with Pytorch
 
 class MLP(PyTorchClassifier):
     def __init__(self, inputdim, hiddendim, nclasses, l2reg=0., batch_size=64,
-                 seed=1111, cudaEfficient=False):
+                 seed=1111, cudaEfficient=False, bilinear=False):
         super(self.__class__, self).__init__(inputdim, nclasses, l2reg,
                                              batch_size, seed, cudaEfficient)
 
         self.hiddendim = hiddendim
+        self.bilinear = bilinear
 
-        self.model = nn.Sequential(
-            nn.Linear(self.inputdim, self.hiddendim),
-            nn.BatchNorm1d(self.hiddendim),
-            nn.PReLU(),
-            nn.Linear(self.hiddendim, self.hiddendim),
-            nn.BatchNorm1d(self.hiddendim),
-            nn.PReLU(),
-            nn.Linear(self.hiddendim, self.nclasses),
+        if bilinear:
+            self.model = nn.Sequential(
+                nn.Bilinear(self.inputdim, self.inputdim, self.inputdim),  # no dimension reduction at all
+                nn.Linear(self.inputdim, self.hiddendim),
+                # nn.BatchNorm1d(self.hiddendim),
+                nn.PReLU(),
+                nn.Linear(self.hiddendim, self.hiddendim),
+                # nn.BatchNorm1d(self.hiddendim),
+                nn.PReLU(),
+                nn.Linear(self.hiddendim, self.nclasses),
+            ).cuda()
+        else:
+            self.model = nn.Sequential(
+                nn.Linear(self.inputdim, self.hiddendim),
+                # nn.BatchNorm1d(self.hiddendim),
+                nn.PReLU(),
+                nn.Linear(self.hiddendim, self.hiddendim),
+                # nn.BatchNorm1d(self.hiddendim),
+                nn.PReLU(),
+                nn.Linear(self.hiddendim, self.nclasses),
             ).cuda()
 
         self.loss_fn = nn.CrossEntropyLoss().cuda()

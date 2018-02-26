@@ -198,7 +198,7 @@ if __name__ == "__main__":
             logging.info(results_transfer)
 
             # now we sift through the result dictionary and save results to csv
-            if not params.dis or not params.pdtb:
+            if not params.dis and not params.pdtb:
                 write_to_csv(pjoin(params.outputdir, "senteval_results.csv"), epoch, results_transfer, first)
             else:
                 write_to_dis_csv(pjoin(params.outputdir, csv_file_name), epoch, results_transfer, first)

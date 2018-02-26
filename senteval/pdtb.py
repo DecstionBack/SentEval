@@ -93,6 +93,6 @@ class PDTB_Eval(object):
                              'noreg': False}
         clf = SplitClassifier(self.X, self.y, config_classifier)
         devacc, testacc = clf.run()
-        logging.debug('Dev acc : {0} Test acc : {1} for DIS\n'.format(devacc, testacc))
+        logging.debug('Dev acc : {0} Test acc : {1} for PDTB\n'.format(devacc, testacc))
         return {'devacc': devacc, 'acc': testacc, 'ndev': len(self.data['valid'][0]),
                 'ntest': len(self.data['test'][0])}

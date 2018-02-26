@@ -12,7 +12,7 @@ from exutil import dotdict
 import argparse
 import logging
 from os.path import join as pjoin
-from dissent import RandomEncoder
+from dissent import BLSTMEncoder, AVGEncoder
 
 import logging
 
@@ -27,6 +27,7 @@ parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search f
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
 parser.add_argument("--lang", type=str, default='CH', help="CH|SP, change language")
 parser.add_argument("--random", action='store_true', help="Use randomly initialized network")
+parser.add_argument("--avg", action="store_true", help="use average of word embeddings")
 
 params, _ = parser.parse_known_args()
 
@@ -137,13 +138,11 @@ if __name__ == "__main__":
 
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:
-        if not params.random:
+        if not params.random and not params.avg:
             # Load model
             MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
             params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
         else:
-            # initialize randomly
-            logging.info("initialize network randomly")
             config_dis_model = {
                 'word_emb_dim': 300,
                 'n_classes': 5,
@@ -159,8 +158,12 @@ if __name__ == "__main__":
                 'tied_weights': False,
                 'use_cuda': True,
             }
-            params_senteval.infersent = RandomEncoder(config_dis_model)
-
+            if params.random:
+                # initialize randomly
+                logging.info("initialize network randomly")
+                params_senteval.infersent = BLSTMEncoder(config_dis_model)
+            else:
+                params_senteval.infersent = AVGEncoder(config_dis_model)
         params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
         se = senteval.SentEval(params_senteval, batcher, prepare)

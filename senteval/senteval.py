@@ -57,7 +57,7 @@ class SentEval(object):
         self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC',
                            'SICKRelatedness', 'SICKEntailment', 'STSBenchmark',
                            'SNLI', 'ImageCaptionRetrieval', 'STS12', 'STS13',
-                           'STS14', 'STS15', 'STS16', 'DIS', 'ABSA_CH', 'ABSA_SP',
+                           'STS14', 'STS15', 'STS16', 'DIS', 'PDTB', 'ABSA_CH', 'ABSA_SP',
                            'STS_SP']
 
     def eval(self, name):

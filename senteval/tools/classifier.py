@@ -221,9 +221,9 @@ class MLP(PyTorchClassifier):
                 nn.Linear(self.inputdim, self.hiddendim),
                 # nn.BatchNorm1d(self.hiddendim),
                 nn.PReLU(),
-                nn.Linear(self.hiddendim, self.hiddendim),
+                # nn.Linear(self.hiddendim, self.hiddendim),
                 # nn.BatchNorm1d(self.hiddendim),
-                nn.PReLU(),
+                # nn.PReLU(),
                 nn.Linear(self.hiddendim, self.nclasses),
             ).cuda()
 

@@ -104,10 +104,10 @@ class PyTorchClassifier(object):
                     Xbatch = Xbatch.cuda()
                     ybatch = ybatch.cuda()
 
-                if not self.model.bilinear:
+                if not self.bilinear:
                     output = self.model(Xbatch)
                 else:
-                    assert self.inputdim % 2 == 0  # hid dim must be even
+                    assert self.inputdim % 2 == 0  # hid dim must be even (this is feature dimension)
                     Xbatch_vec1, Xbatch_vec2 = torch.split(Xbatch, split_size=self.inputdim/2, dim=1)
                     output = self.model(Xbatch_vec1, Xbatch_vec2)
                 # loss
@@ -178,7 +178,7 @@ class LogReg(PyTorchClassifier):
         self.bilinear = bilinear
         if bilinear:
             self.model = nn.Sequential(
-                nn.Bilinear(self.inputdim, self.inputdim, self.inputdim),  # no dimension reduction at all
+                nn.Bilinear(self.inputdim / 2, self.inputdim, self.inputdim),  # no dimension reduction at all
                 nn.Linear(self.inputdim, self.nclasses),
             ).cuda()
         else:
@@ -207,7 +207,7 @@ class MLP(PyTorchClassifier):
 
         if bilinear:
             self.model = nn.Sequential(
-                nn.Bilinear(self.inputdim, self.inputdim, self.inputdim),  # no dimension reduction at all
+                nn.Bilinear(self.inputdim / 2, self.inputdim, self.inputdim),  # no dimension reduction at all
                 nn.Linear(self.inputdim, self.hiddendim),
                 # nn.BatchNorm1d(self.hiddendim),
                 nn.PReLU(),

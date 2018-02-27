@@ -196,36 +196,41 @@ class FineTuneClassifier(object):
         # meaning, true randomness. Here we only permute once...not as good
 
         input1, input2, train_labels = self.pdtb.data["train"]
+        self.encoder.train()
+        self.clf.model.train()
 
         n_labels = len(train_labels)
-        all_costs = []
-        for ii in range(0, n_labels, params.batch_size):
-            batch1 = input1[ii:ii + params.batch_size]
-            batch2 = input2[ii:ii + params.batch_size]
+        for _ in range(self.nepoch, self.nepoch + nepoches):
+            all_costs = []
 
-            mylabels = train_labels[ii:ii + params.batch_size]
-            y = [self.pdtb.dico_label[y] for y in mylabels]
-            ybatch = torch.LongTensor(y).cuda()
+            for ii in range(0, n_labels, self.clf.batch_size):
+                batch1 = input1[ii:ii + self.clf.batch_size]
+                batch2 = input2[ii:ii + self.clf.batch_size]
 
-            if len(batch1) == len(batch2) and len(batch1) > 0:
-                sent1 = [' '.join(s) for s in batch1]
-                sent2 = [' '.join(s) for s in batch2]
+                mylabels = train_labels[ii:ii + self.clf.batch_size]
+                y = [self.pdtb.dico_label[y] for y in mylabels]
+                ybatch = torch.LongTensor(y).cuda()
 
-                u = self.encoder.encode_trainable(sent1)
-                v = self.encoder.encode_trainable(sent2)
+                if len(batch1) == len(batch2) and len(batch1) > 0:
+                    sent1 = [' '.join(s) for s in batch1]
+                    sent2 = [' '.join(s) for s in batch2]
 
-                Xbatch = torch.cat((u, v, u - v, u * v, (u + v) / 2.), 1)
-                output = self.clf.model(Xbatch)
+                    u = self.encoder.encode_trainable(sent1)
+                    v = self.encoder.encode_trainable(sent2)
 
-                # loss
-                loss = self.clf.loss_fn(output, ybatch)
-                all_costs.append(loss.data[0])
+                    Xbatch = torch.cat((u, v, u - v, u * v, (u + v) / 2.), 1)
+                    output = self.clf.model(Xbatch)
 
-                # backward
-                self.optimizer.zero_grad()
-                loss.backward()
-                # Update parameters
-                self.optimizer.step()
+                    # loss
+                    loss = self.clf.loss_fn(output, ybatch)
+                    all_costs.append(loss.data[0])
+
+                    # backward
+                    self.optimizer.zero_grad()
+                    loss.backward()
+                    # Update parameters
+                    self.optimizer.step()
+        self.nepoch += nepoches
 
     def score(self, test=False):
         # compute the score for dev set
@@ -239,10 +244,10 @@ class FineTuneClassifier(object):
 
         correct = 0
         for i in range(0, len(labels), self.clf.batch_size):
-            batch1 = input1[i:i + params.batch_size]
-            batch2 = input2[i:i + params.batch_size]
+            batch1 = input1[i:i + self.clf.batch_size]
+            batch2 = input2[i:i + self.clf.batch_size]
 
-            mylabels = labels[i:i + params.batch_size]
+            mylabels = labels[i:i + self.clf.batch_size]
             y = [self.pdtb.dico_label[y] for y in mylabels]
             ybatch = torch.LongTensor(y)
 

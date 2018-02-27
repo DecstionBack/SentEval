@@ -22,8 +22,9 @@ parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search f
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
 parser.add_argument("--dis", action='store_true', help="run on DIS")
 parser.add_argument("--pdtb", action='store_true', help="run on PDTB")
+parser.add_argument("--dat", action='store_true', help="run on DAT")
 parser.add_argument("--mlp", action='store_true', help="use MLP")
-parser.add_argument("--bilinear", action='store_true', help="use Bilinear interaction")
+parser.add_argument("--bilinear", action='store_true', help="Vector dimension too large, do not use BiLinear interaction")
 
 params, _ = parser.parse_known_args()
 
@@ -134,6 +135,8 @@ if params.dis:
     transfer_tasks = ['DIS']
 elif params.pdtb:
     transfer_tasks = ['PDTB']
+elif params.dat:
+    transfer_tasks = ['DAT']
 else:
     transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
                       'SICKEntailment', 'MRPC', 'STS14']

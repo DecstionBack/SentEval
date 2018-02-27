@@ -25,6 +25,7 @@ from senteval.dis import DISEval
 from senteval.ABSA_CH import ABSA_CHEval
 from senteval.ABSA_SP import ABSA_SPEval
 from senteval.pdtb import PDTB_Eval
+from senteval.dat import DAT_EVAL
 
 class SentEval(object):
     def __init__(self, params, batcher, prepare=None):
@@ -60,7 +61,7 @@ class SentEval(object):
         self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC',
                            'SICKRelatedness', 'SICKEntailment', 'STSBenchmark',
                            'SNLI', 'ImageCaptionRetrieval', 'STS12', 'STS13',
-                           'STS14', 'STS15', 'STS16', 'DIS', 'PDTB', 'ABSA_CH', 'ABSA_SP',
+                           'STS14', 'STS15', 'STS16', 'DIS', 'PDTB', 'DAT', 'ABSA_CH', 'ABSA_SP',
                            'STS_SP']
 
     def eval(self, name):
@@ -101,6 +102,8 @@ class SentEval(object):
             self.evaluation = DISEval(tpath + '/DIS', seed=self.params.seed)
         elif name == 'PDTB':
             self.evaluation = PDTB_Eval(tpath + '/PDTB', seed=self.params.seed)
+        elif name == 'DAT':
+            self.evaluation = DAT_EVAL(tpath + '/DAT', seed=self.params.seed)
         elif name in ['STS12', 'STS13', 'STS14', 'STS15', 'STS16']:
             fpath = name + '-en-test'
             self.evaluation = eval(name + 'Eval')(tpath + '/STS/' + fpath,

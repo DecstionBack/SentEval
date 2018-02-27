@@ -232,6 +232,23 @@ class MLP(PyTorchClassifier):
         self.optimizer = optim.Adam(self.model.parameters(),
                                     weight_decay=self.l2reg)
 
+class FCNet(PyTorchClassifier):
+    def __init__(self, inputdim, hiddendim, nclasses, l2reg=0., batch_size=64,
+                 seed=1111, cudaEfficient=False):
+        super(self.__class__, self).__init__(inputdim, nclasses, l2reg,
+                                             batch_size, seed, cudaEfficient)
+
+        self.hiddendim = hiddendim
+
+        self.classifier = nn.Sequential(
+            nn.Linear(self.inputdim, self.hiddendim),
+            nn.Linear(self.hiddendim, self.hiddendim),
+            nn.Linear(self.hiddendim, self.nclasses)
+        ).cuda()
+
+        self.loss_fn = nn.CrossEntropyLoss().cuda()
+        self.loss_fn.size_average = False
+
 """
 Build K-means classifier here
 """

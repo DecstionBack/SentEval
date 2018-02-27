@@ -65,7 +65,7 @@ assert os.path.isfile(GLOVE_PATH), 'Set GloVe PATH'
 
 # import senteval
 sys.path.insert(0, PATH_SENTEVAL)
-from senteval.tools.classifier import LogReg, MLP
+from senteval.tools.classifier import LogReg, MLP, FCNet
 
 """
 Evaluation of trained model on Transfer Tasks (SentEval)
@@ -74,9 +74,14 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 # define transfer tasks
 transfer_tasks = ['PDTB']
 
-params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
-                           'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear,
-                           'classifier': 'LogReg'})
+if not params.mlp:
+    params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
+                               'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear,
+                               'classifier': 'LogReg'})
+else:
+    params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
+                               'seed': 1111, 'kfold': 5, 'classifier': 'MLP', 'nhid': 512,
+                               'bilinear': params.bilinear})
 
 def prepare(params, samples):
     params.encoder.build_vocab([' '.join(s) for s in samples],
@@ -316,7 +321,7 @@ class FineTuneClassifier(object):
                                  cudaEfficient=self.cudaEfficient,
                                   batch_size=32)
                 elif self.classifier == 'MLP':
-                    self.clf = MLP(inputdim=self.featdim, hiddendim=self.nhid,
+                    self.clf = FCNet(inputdim=self.featdim, hiddendim=self.nhid,
                               nclasses=self.nclasses, l2reg=reg,
                               seed=self.seed, cudaEfficient=self.cudaEfficient,
                               batch_size=32)
@@ -330,8 +335,9 @@ class FineTuneClassifier(object):
                 self.fit()
             else:
                 raise Exception("Must use PyTorch")
-
-            scores.append(round(100 * self.score(), 2))
+            cur_dev_acc = self.score()
+            logging.info("Epoch {} dev accuracy {}".format(self.nepoch,cur_dev_acc))
+            scores.append(round(100 * cur_dev_acc, 2))
         logging.info([('reg:' + str(regs[idx]), scores[idx])
                       for idx in range(len(scores))])
         optreg = regs[np.argmax(scores)]
@@ -347,7 +353,7 @@ class FineTuneClassifier(object):
                              l2reg=optreg, seed=self.seed,
                              cudaEfficient=self.cudaEfficient)
             elif self.classifier == 'MLP':
-                self.clf = MLP(inputdim=self.featdim, hiddendim=self.nhid,
+                self.clf = FCNet(inputdim=self.featdim, hiddendim=self.nhid,
                           nclasses=self.nclasses, l2reg=optreg, seed=self.seed,
                           cudaEfficient=self.cudaEfficient)
             # small hack : MultiNLI/SNLI specific

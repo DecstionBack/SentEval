@@ -145,10 +145,15 @@ class BLSTMEncoder(nn.Module):
         print('New vocab size : {0} (added {1} words)'.format(
             len(self.word_vec), len(new_word_vec)))
 
-    def get_batch(self, batch):
+    def get_batch(self, batch, no_sort=False):
         # sent in batch in decreasing order of lengths
         # batch: (bsize, max_len, word_dim)
-        embed = np.zeros((len(batch[0]), len(batch), self.word_emb_dim))
+
+        # if batch is not sorted, we figure out the max
+        t_dim = len(batch[0])
+        if no_sort:
+            t_dim = max([len(s) for s in batch])
+        embed = np.zeros((t_dim, len(batch), self.word_emb_dim))
 
         for i in range(len(batch)):
             for j in range(len(batch[i])):
@@ -219,7 +224,7 @@ class BLSTMEncoder(nn.Module):
         # expecting a batched input, not full list
         sentences, lengths = self.prepare_samples(sentences, tokenize, verbose, no_sort=True)
 
-        batch = Variable(self.get_batch(sentences), volatile=volatile)  # for training purpose
+        batch = Variable(self.get_batch(sentences, no_sort=True), volatile=volatile)  # for training purpose
         if self.is_cuda():
             batch = batch.cuda()
         batch = self.forward((batch, lengths))

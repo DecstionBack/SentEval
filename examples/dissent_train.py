@@ -172,7 +172,7 @@ class FineTuneClassifier(object):
                   'noreg': False}
 
         self.nclasses = config['nclasses']
-        self.featdim = self.X['train'].shape[1]
+        self.featdim = self.encoder.enc_lstm_dim
         self.seed = config['seed']
         self.usepytorch = config['usepytorch']
         self.classifier = config['classifier']

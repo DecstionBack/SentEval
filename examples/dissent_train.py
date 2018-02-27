@@ -78,14 +78,14 @@ params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
                            'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear})
 
 def prepare(params, samples):
-    params.infersent.build_vocab([' '.join(s) for s in samples],
+    params.encoder.build_vocab([' '.join(s) for s in samples],
                                  tokenize=False)
 
 
 def batcher(params, batch):
     # batch contains list of words
     sentences = [' '.join(s) for s in batch]
-    embeddings = params.infersent.encode(sentences, bsize=params.batch_size,
+    embeddings = params.encoder.encode(sentences, bsize=params.batch_size,
                                          tokenize=False)
     return embeddings
 

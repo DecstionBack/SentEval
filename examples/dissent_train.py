@@ -161,7 +161,7 @@ class FineTuneClassifier(object):
         # decoder must be a PyTorchClassifier object that we can fit
         # encoder is the original encoder we can backprop to
         self.encoder = params.encoder
-        self.pdtb = PDTB_Data(PATH_TO_DATA + '/DAT')
+        self.pdtb = PDTB_Data(PATH_TO_DATA + '/PDTB')
 
         # build up vocab
         self.pdtb.do_prepare(params, prepare)

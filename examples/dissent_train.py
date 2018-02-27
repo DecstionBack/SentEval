@@ -17,7 +17,6 @@ from exutil import dotdict
 import argparse
 import logging
 from os.path import join as pjoin
-from senteval.tools.classifier import LogReg, MLP
 import codecs
 import numpy as np
 import copy
@@ -66,7 +65,7 @@ assert os.path.isfile(GLOVE_PATH), 'Set GloVe PATH'
 
 # import senteval
 sys.path.insert(0, PATH_SENTEVAL)
-import senteval
+from senteval.tools.classifier import LogReg, MLP
 
 """
 Evaluation of trained model on Transfer Tasks (SentEval)
@@ -397,7 +396,7 @@ if __name__ == "__main__":
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
     epoch_numbers = sorted(epoch_numbers)  # now sorted
 
-    suffix = ""
+    suffix = "_finetune"  # to mark difference with other methods
     if params.mlp:
         suffix += "_mlp"
 

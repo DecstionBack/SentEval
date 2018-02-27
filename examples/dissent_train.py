@@ -316,7 +316,7 @@ class FineTuneClassifier(object):
                 # an optimizer for each model
 
                 # this is a possible point of failure, watch out!
-                self.optimizer = optim.Adam(self.encoder.parameters() + self.clf.model.parameters(),
+                self.optimizer = optim.Adam(list(self.encoder.parameters()) + list(self.clf.model.parameters()),
                                             weight_decay=self.clf.l2reg)
                 self.fit()
             else:

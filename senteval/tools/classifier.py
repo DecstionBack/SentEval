@@ -240,7 +240,7 @@ class FCNet(PyTorchClassifier):
 
         self.hiddendim = hiddendim
 
-        self.classifier = nn.Sequential(
+        self.model = nn.Sequential(
             nn.Linear(self.inputdim, self.hiddendim),
             nn.Linear(self.hiddendim, self.hiddendim),
             nn.Linear(self.hiddendim, self.nclasses)

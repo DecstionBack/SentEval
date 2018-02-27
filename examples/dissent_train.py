@@ -283,6 +283,7 @@ class FineTuneClassifier(object):
         while not stop_train and self.nepoch <= self.maxepoch:
             self.trainepoch(nepoches=self.nepoches)
             accuracy = self.score()
+            logging.info("epoch {} finished".format(self.nepoch))
             if accuracy > bestaccuracy:
                 bestaccuracy = accuracy
                 # this feels slow and unnecessary?
@@ -307,15 +308,18 @@ class FineTuneClassifier(object):
             regs = [0.]
         scores = []
         for reg in regs:
+            logging.info("Searching reg {}".format(reg))
             if self.usepytorch:
                 if self.classifier == 'LogReg':
                     self.clf = LogReg(inputdim=self.featdim, nclasses=self.nclasses,
                                  l2reg=reg, seed=self.seed,
-                                 cudaEfficient=self.cudaEfficient)
+                                 cudaEfficient=self.cudaEfficient,
+                                  batch_size=32)
                 elif self.classifier == 'MLP':
                     self.clf = MLP(inputdim=self.featdim, hiddendim=self.nhid,
                               nclasses=self.nclasses, l2reg=reg,
-                              seed=self.seed, cudaEfficient=self.cudaEfficient)
+                              seed=self.seed, cudaEfficient=self.cudaEfficient,
+                              batch_size=32)
 
                 # this will actually encompass parameters from encoder and clf
                 # an optimizer for each model

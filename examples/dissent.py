@@ -224,7 +224,8 @@ class BLSTMEncoder(nn.Module):
         # expecting a batched input, not full list
         sentences, lengths = self.prepare_samples(sentences, tokenize, verbose, no_sort=True)
 
-        batch = Variable(self.get_batch(sentences, no_sort=True), volatile=volatile)  # for training purpose
+        # for training purpose
+        batch = Variable(self.get_batch(sentences, no_sort=True), volatile=volatile, requires_grad=False)
         if self.is_cuda():
             batch = batch.cuda()
         batch = self.forward((batch, lengths))

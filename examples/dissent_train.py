@@ -209,7 +209,7 @@ class FineTuneClassifier(object):
 
                 mylabels = train_labels[ii:ii + self.clf.batch_size]
                 y = [self.pdtb.dico_label[y] for y in mylabels]
-                ybatch = torch.LongTensor(y).cuda()
+                ybatch = Variable(torch.LongTensor(y), requires_grad=False).cuda()
 
                 if len(batch1) == len(batch2) and len(batch1) > 0:
                     sent1 = [' '.join(s) for s in batch1]

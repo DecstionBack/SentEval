@@ -231,3 +231,7 @@ class MLP(PyTorchClassifier):
         self.loss_fn.size_average = False
         self.optimizer = optim.Adam(self.model.parameters(),
                                     weight_decay=self.l2reg)
+
+"""
+Build K-means classifier here
+"""

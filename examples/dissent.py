@@ -156,7 +156,7 @@ class BLSTMEncoder(nn.Module):
 
         return torch.FloatTensor(embed)
 
-    def prepare_samples(self, sentences, bsize, tokenize, verbose):
+    def prepare_samples(self, sentences, tokenize, verbose, no_sort=False):
         if tokenize:
             from nltk.tokenize import word_tokenize
         sentences = [['<s>'] + s.split() + ['</s>'] if not tokenize else
@@ -179,6 +179,10 @@ class BLSTMEncoder(nn.Module):
             print('Nb words kept : {0}/{1} ({2} %)'.format(
                 n_wk, n_w, round((100.0 * n_wk) / n_w, 2)))
 
+        if no_sort:
+            # technically "forward" method is already sorting
+            return sentences, lengths
+
         # sort by decreasing length
         lengths, idx_sort = np.sort(lengths)[::-1], np.argsort(-lengths)
         sentences = np.array(sentences)[idx_sort]
@@ -188,7 +192,7 @@ class BLSTMEncoder(nn.Module):
     def encode(self, sentences, bsize=64, tokenize=True, verbose=False):
         tic = time.time()
         sentences, lengths, idx_sort = self.prepare_samples(
-            sentences, bsize, tokenize, verbose)
+            sentences, tokenize, verbose)
 
         embeddings = []
         for stidx in range(0, len(sentences), bsize):
@@ -210,6 +214,17 @@ class BLSTMEncoder(nn.Module):
                 round(len(embeddings) / (time.time() - tic), 2),
                 'gpu' if self.is_cuda() else 'cpu', bsize))
         return embeddings
+
+    def encode_trainable(self, sentences, tokenize=True, verbose=False, volatile=False):
+        # expecting a batched input, not full list
+        sentences, lengths = self.prepare_samples(sentences, tokenize, verbose, no_sort=True)
+
+        batch = Variable(self.get_batch(sentences), volatile=volatile)  # for training purpose
+        if self.is_cuda():
+            batch = batch.cuda()
+        batch = self.forward((batch, lengths))
+
+        return batch
 
 
 class DisSent(nn.Module):

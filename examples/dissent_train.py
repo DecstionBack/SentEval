@@ -75,7 +75,8 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 transfer_tasks = ['PDTB']
 
 params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
-                           'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear})
+                           'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear,
+                           'classifier': 'LogReg'})
 
 def prepare(params, samples):
     params.encoder.build_vocab([' '.join(s) for s in samples],

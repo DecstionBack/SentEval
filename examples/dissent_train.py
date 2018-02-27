@@ -39,6 +39,8 @@ parser.add_argument("--pdtb", action='store_true', help="run on PDTB")
 parser.add_argument("--mlp", action='store_true', help="use MLP")
 parser.add_argument("--bilinear", action='store_true',
                     help="Vector dimension too large, do not use BiLinear interaction")
+parser.add_argument("--log_interval", type=int, default=100, help="how many batches to log once")
+
 
 params, _ = parser.parse_known_args()
 
@@ -208,9 +210,12 @@ class FineTuneClassifier(object):
         for _ in range(self.nepoch, self.nepoch + nepoches):
             all_costs = []
 
+            iter = 0
             for ii in range(0, n_labels, self.clf.batch_size):
                 batch1 = input1[ii:ii + self.clf.batch_size]
                 batch2 = input2[ii:ii + self.clf.batch_size]
+
+                iter += len(batch1)
 
                 mylabels = train_labels[ii:ii + self.clf.batch_size]
                 y = [self.pdtb.dico_label[y] for y in mylabels]
@@ -235,6 +240,13 @@ class FineTuneClassifier(object):
                     loss.backward()
                     # Update parameters
                     self.optimizer.step()
+
+                if len(all_costs) == params.log_interval:
+                    logging.info('iter {}; loss {}'.format(
+                        iter,
+                        round(np.mean(all_costs), 2)))
+                    all_costs = []
+
         self.nepoch += nepoches
 
     def score(self, test=False):

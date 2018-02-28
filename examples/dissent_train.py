@@ -176,7 +176,8 @@ class FineTuneClassifier(object):
         config = {'nclasses': len(self.pdtb.dico_label), 'seed': self.pdtb.seed,
                   'usepytorch': params.usepytorch,
                   'cudaEfficient': True,
-                  'classifier': params.classifier, 'nhid': params.nhid, 'maxepoch': 100, 'nepoches': 10,
+                  'classifier': params.classifier, 'nhid': params.nhid, 'maxepoch': 100,
+                  'nepoches': 1,
                   'noreg': False}
 
         self.nclasses = config['nclasses']
@@ -300,7 +301,7 @@ class FineTuneClassifier(object):
         while not stop_train and self.nepoch <= self.maxepoch:
             self.trainepoch(nepoches=self.nepoches)
             accuracy = self.score()
-            logging.info("epoch {} finished".format(self.nepoch))
+            logging.info("epoch {} finished with dev accuracy {}".format(self.nepoch, accuracy))
             if accuracy > bestaccuracy:
                 bestaccuracy = accuracy
                 # this feels slow and unnecessary?
@@ -336,7 +337,7 @@ class FineTuneClassifier(object):
                     self.clf = FCNet(inputdim=self.featdim, hiddendim=self.nhid,
                               nclasses=self.nclasses, l2reg=reg,
                               seed=self.seed, cudaEfficient=self.cudaEfficient,
-                              batch_size=32)
+                              batch_size=64)
 
                 # this will actually encompass parameters from encoder and clf
                 # an optimizer for each model

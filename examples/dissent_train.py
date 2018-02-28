@@ -364,11 +364,11 @@ class FineTuneClassifier(object):
             if self.classifier == 'LogReg':
                 self.clf = LogReg(inputdim=self.featdim, nclasses=self.nclasses,
                              l2reg=optreg, seed=self.seed,
-                             cudaEfficient=self.cudaEfficient)
+                             cudaEfficient=self.cudaEfficient, batch_size=32)
             elif self.classifier == 'MLP':
                 self.clf = FCNet(inputdim=self.featdim, hiddendim=self.nhid,
                           nclasses=self.nclasses, l2reg=optreg, seed=self.seed,
-                          cudaEfficient=self.cudaEfficient)
+                          cudaEfficient=self.cudaEfficient, batch_size=32)
             # small hack : MultiNLI/SNLI specific
             if self.nepoches:
                 self.clf.nepoches = self.nepoches

@@ -56,7 +56,7 @@ class PDTB_Eval(object):
 
     def run(self, params, batcher):
         self.X, self.y = {}, {}
-        dico_label = ['Instantiation',
+        dico_label_list = ['Instantiation',
                       'Synchrony',
                       'Pragmatic cause',
                       'List',
@@ -67,7 +67,7 @@ class PDTB_Eval(object):
                       'Cause',
                       'Concession',
                       'Contrast']
-        dico_label = {k: v for v, k in enumerate(dico_label)}
+        dico_label = {k: v for v, k in enumerate(dico_label_list)}
         for key in self.data:
             if key not in self.X: self.X[key] = []
             if key not in self.y: self.y[key] = []
@@ -109,7 +109,7 @@ class PDTB_Eval(object):
 
         per_label_report = {}
         for i in range(len(precision)):
-            per_label_report[dico_label[i]] = [recall[i], precision[i], support[i]]
+            per_label_report[dico_label_list[i]] = [recall[i], precision[i], support[i]]
 
         logging.debug('Dev acc : {0} Test acc : {1} for PDTB\n'.format(devacc, testacc))
         return {'devacc': devacc, 'acc': testacc, 'ndev': len(self.data['valid'][0]),

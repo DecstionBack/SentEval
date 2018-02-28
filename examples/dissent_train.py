@@ -360,7 +360,7 @@ class FineTuneClassifier(object):
 
         logging.info('Evaluating...')
         # retrain with best hyper-param
-        if self.usepytorch:
+        if self.usepytorch and not self.noreg:
             if self.classifier == 'LogReg':
                 self.clf = LogReg(inputdim=self.featdim, nclasses=self.nclasses,
                              l2reg=optreg, seed=self.seed,

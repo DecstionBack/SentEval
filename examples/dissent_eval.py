@@ -78,8 +78,10 @@ def write_to_dis_csv(file_name, epoch, results_transfer, print_header=False):
             acc = results_transfer['DIS']['acc']
         elif params.pdtb:
             acc = results_transfer['PDTB']['acc']
+        elif params.dat:
+            acc = results_transfer['DAT']['acc']
         else:
-            raise Exception("must be one of two: dis or pdtb")
+            raise Exception("must be one of two: dis or pdtb or dat")
 
         results.append("{0:.2f}".format(acc))
 

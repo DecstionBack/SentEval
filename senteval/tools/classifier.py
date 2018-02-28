@@ -251,4 +251,22 @@ class FCNet(PyTorchClassifier):
 
 """
 Build K-means classifier here
+
+Note: this is NOT KNN, the goal of this classifier
+is to simulate a clustering scenario.
 """
+class KMeansClassifier(object):
+    def __init__(self, inputdim, nclasses, l2reg=0., batch_size=64, seed=1111,
+                 cudaEfficient=False, nepoches=4, maxepoch=200):
+        # fix seed
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+
+        self.inputdim = inputdim
+        self.nclasses = nclasses
+        self.l2reg = l2reg
+        self.batch_size = batch_size
+        self.cudaEfficient = cudaEfficient
+        self.nepoches = nepoches
+        self.maxepoch = maxepoch

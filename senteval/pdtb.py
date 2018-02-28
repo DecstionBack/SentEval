@@ -8,6 +8,7 @@ import codecs
 import os
 import logging
 import numpy as np
+from sklearn import metrics
 
 from tools.validation import SplitClassifier, InnerKFoldClassifier
 
@@ -82,7 +83,8 @@ class PDTB_Eval(object):
                     enc1 = batcher(params, batch1)
                     enc2 = batcher(params, batch2)
                     if params.bilinear:
-                        enc_input.append(np.hstack((enc1, enc2)))  # could also do a full feature vector then bilinear...
+                        enc_input.append(
+                            np.hstack((enc1, enc2)))  # could also do a full feature vector then bilinear...
                     else:
                         enc_input.append(np.hstack((enc1, enc2, enc1 * enc2, enc1 - enc2, (enc1 + enc2) / 2.)))
                 if (ii * params.batch_size) % (20000 * params.batch_size) == 0:
@@ -91,11 +93,24 @@ class PDTB_Eval(object):
             self.y[key] = [dico_label[y] for y in mylabels]  # we are zero-indexed so -1
 
         # change number of classes
-        config_classifier = {'nclasses': len(dico_label), 'seed': self.seed, 'usepytorch': params.usepytorch, 'cudaEfficient': True, \
+        config_classifier = {'nclasses': len(dico_label), 'seed': self.seed, 'usepytorch': params.usepytorch,
+                             'cudaEfficient': True, \
                              'classifier': params.classifier, 'nhid': params.nhid, 'maxepoch': 100, 'nepoches': 10,
                              'noreg': False, 'bilinear': params.bilinear}
         clf = SplitClassifier(self.X, self.y, config_classifier)
-        devacc, testacc = clf.run()
+        devacc, testacc, classifier = clf.run(return_clf=True)
+
+        # we also present precision and recall for each class
+        y_test_hat = classifier.predict(self.X['test'])  # a numpy array
+        y_test = np.array(self.y['test'])
+
+        precision, recall, _, support = metrics.precision_recall_fscore_support(y_test, y_test_hat)
+        precision, recall, support = precision.tolist(), recall.tolist(), support.tolist()
+
+        per_label_report = {}
+        for i in range(len(precision)):
+            per_label_report[dico_label[i]] = [recall[i], precision[i], support[i]]
+
         logging.debug('Dev acc : {0} Test acc : {1} for PDTB\n'.format(devacc, testacc))
         return {'devacc': devacc, 'acc': testacc, 'ndev': len(self.data['valid'][0]),
-                'ntest': len(self.data['test'][0])}
+                'ntest': len(self.data['test'][0]), 'label_report': per_label_report}

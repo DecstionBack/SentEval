@@ -221,7 +221,7 @@ class SplitClassifier(object):
         self.noreg = False if 'noreg' not in config else config['noreg']
         self.bilinear = False if 'bilinear' not in config else config['bilinear']
 
-    def run(self):
+    def run(self, return_clf=False):
         logging.info('Training {0} with standard validation..'
                      .format(self.modelname))
         regs = [10**t for t in range(-5, -1)] if self.usepytorch else \
@@ -281,4 +281,8 @@ class SplitClassifier(object):
 
         testaccuracy = clf.score(self.X['test'], self.y['test'])
         testaccuracy = round(100*testaccuracy, 2)
-        return devaccuracy, testaccuracy
+
+        if not return_clf:
+            return devaccuracy, testaccuracy
+        else:
+            return devaccuracy, testaccuracy, clf  # return best clf

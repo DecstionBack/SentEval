@@ -337,7 +337,7 @@ class FineTuneClassifier(object):
                     self.clf = FCNet(inputdim=self.featdim, hiddendim=self.nhid,
                               nclasses=self.nclasses, l2reg=reg,
                               seed=self.seed, cudaEfficient=self.cudaEfficient,
-                              batch_size=64)
+                              batch_size=32)
 
                 # this will actually encompass parameters from encoder and clf
                 # an optimizer for each model

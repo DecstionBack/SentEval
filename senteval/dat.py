@@ -54,7 +54,7 @@ class DAT_EVAL(object):
     def run(self, params, batcher):
         self.X, self.y = {}, {}
         # TODO: change this part
-        dico_label = {"entail": 0, "contradict": 1}
+        dico_label = {"entail": 0, "contradict": 1, 'neutral': 2}
         for key in self.data:
             if key not in self.X: self.X[key] = []
             if key not in self.y: self.y[key] = []

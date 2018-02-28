@@ -178,7 +178,7 @@ class FineTuneClassifier(object):
                   'cudaEfficient': True,
                   'classifier': params.classifier, 'nhid': params.nhid, 'maxepoch': 100,
                   'nepoches': 1,
-                  'noreg': False}
+                  'noreg': True}  # originally False, but now set as True
 
         self.nclasses = config['nclasses']
         self.featdim = self.encoder.enc_lstm_dim * 5 * 2
@@ -321,7 +321,7 @@ class FineTuneClassifier(object):
         logging.info('Training {0} with standard validation..'
                      .format(self.modelname))
         regs = [10 ** t for t in range(-5, -1)] if self.usepytorch else \
-            [2 ** t for t in range(-2, 4, 1)]
+              [2 ** t for t in range(-2, 4, 1)]
         if self.noreg:
             regs = [0.]
         scores = []

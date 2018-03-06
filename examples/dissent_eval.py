@@ -21,10 +21,11 @@ parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all mo
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
 parser.add_argument("--dis", action='store_true', help="run on DIS")
-parser.add_argument("--pdtb", action='store_true', help="run on PDTB")
+parser.add_argument("--pdtb", action='store_true', help="run on PDTB, PDTB_IMEX, PDTB_EX")
 parser.add_argument("--dat", action='store_true', help="run on DAT")
 parser.add_argument("--mlp", action='store_true', help="use MLP")
-parser.add_argument("--bilinear", action='store_true', help="Vector dimension too large, do not use BiLinear interaction")
+parser.add_argument("--bilinear", action='store_true',
+                    help="Vector dimension too large, do not use BiLinear interaction")
 
 params, _ = parser.parse_known_args()
 
@@ -77,7 +78,14 @@ def write_to_dis_csv(file_name, epoch, results_transfer, print_header=False):
         if params.dis:
             acc = results_transfer['DIS']['acc']
         elif params.pdtb:
-            acc = results_transfer['PDTB']['acc']
+            if 'PDTB' in results_transfer:
+                acc = results_transfer['PDTB']['acc']
+            elif 'PDTB_EX' in results_transfer:
+                acc = results_transfer['PDTB_EX']['acc']
+            elif 'PDTB_IMEX' in results_transfer:
+                acc = results_transfer['PDTB_IMEX']['acc']
+            else:
+                raise Exception("task not in PDTB range")
         elif params.dat:
             acc = results_transfer['DAT']['acc']
         else:
@@ -136,7 +144,7 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 if params.dis:
     transfer_tasks = ['DIS']
 elif params.pdtb:
-    transfer_tasks = ['PDTB']
+    transfer_tasks = ['PDTB_IMEX', 'PDTB_EX']
 elif params.dat:
     transfer_tasks = ['DAT']
 else:

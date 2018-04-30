@@ -16,10 +16,10 @@ import data
 import torch
 
 # Set PATHs
-PATH_TO_SENTEVAL = '/afs/cs.stanford.edu/u/anie/SentEval'
-PATH_TO_DATA = '/deep/u/anie/SentEval/data/senteval_data/'
-PATH_TO_GLOVE = '/deep/u/anie/glove/glove.840B.300d.txt'
-RUN_DIR = '/deep/u/anie/SentEval/run_dir/bow/'
+PATH_TO_GLOVE = '/home/anie/glove/glove.840B.300d.txt'
+PATH_TO_SENTEVAL = '/home/anie/SentEval'
+PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
+RUN_DIR = '/home/anie/SentEval/examples/bow/'
 
 # import SentEval
 sys.path.insert(0, PATH_TO_SENTEVAL)
@@ -80,7 +80,8 @@ if __name__ == "__main__":
     logging.getLogger().addHandler(file_handler)
 
     se = senteval.SentEval(params_senteval, batcher, prepare)
-    transfer_tasks = ['MR', 'CR', 'MPQA', 'SUBJ', 'SST', 'TREC',
-                      'MRPC', 'SICKEntailment', 'SICKRelatedness',
-                      'STSBenchmark', 'STS14']
+    # transfer_tasks = ['MR', 'CR', 'MPQA', 'SUBJ', 'SST', 'TREC',
+    #                   'MRPC', 'SICKEntailment', 'SICKRelatedness',
+    #                   'STSBenchmark', 'STS14']
+    transfer_tasks = ['PDTB_IMEX']
     results = se.eval(transfer_tasks)

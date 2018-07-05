@@ -106,7 +106,7 @@ def batcher(params, batch):
     embeddings = params.infersent.encode(sent_batch, sent_mask)
     embeddings = params.infersent.pick_h(embeddings, sent_lengths)
 
-    return embeddings
+    return embeddings.data.cpu().numpy()
 
 
 def write_to_dis_csv(file_name, epoch, results_transfer, print_header=False):

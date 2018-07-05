@@ -4,10 +4,13 @@ import sys
 import csv
 import os
 import torch
+from torch.autograd import Variable
+import numpy as np
 from exutil import dotdict
 import argparse
 import logging
 from os.path import join as pjoin
+from data import TextEncoder, pad_batch
 
 import logging
 
@@ -44,27 +47,65 @@ logging.getLogger().addHandler(file_handler)
 torch.cuda.set_device(params.gpu_id)
 
 # Set PATHs
-GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
+# GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
 PATH_SENTEVAL = '/home/anie/SentEval'
 PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
+# Word embedding now comes with pickle file
 
-assert os.path.isfile(GLOVE_PATH), 'Set GloVe PATH'
+bpe_encoder_path = '/home/anie/DisExtract/transformer/params/encoder_bpe_40000.json'
+bpe_vocab_path = '/home/anie/DisExtract/transformer/params/vocab_40000.bpe'
+params_path = '/home/anie/DisExtract/transformer/params/'
+
+"""
+BPE encoder
+"""
+text_encoder = TextEncoder(bpe_encoder_path, bpe_vocab_path)
+encoder = text_encoder.encoder
+
+# add special token (embedding is already there)
+encoder['_pad_'] = len(encoder)
+encoder['_start_'] = len(encoder)
+encoder['_end_'] = len(encoder)
+
+def subsequent_mask(size):
+    "Mask out subsequent positions."
+    attn_shape = (1, size, size)
+    subsequent_mask = np.triu(np.ones(attn_shape), k=1).astype('uint8')
+    return torch.from_numpy(subsequent_mask) == 0
+
+def make_std_mask(tgt, pad_id):
+    "Create a mask to hide padding and future words."
+    tgt_mask = (tgt != pad_id).unsqueeze(-2)
+    tgt_mask = tgt_mask & Variable(subsequent_mask(tgt.size(-1)).type_as(tgt_mask.data))
+    return tgt_mask
 
 # import senteval
 sys.path.insert(0, PATH_SENTEVAL)
 import senteval
 
-
+# maybe can trunkcate samples?? here we follow skipthought_tf
 def prepare(params, samples):
-    params.infersent.build_vocab([' '.join(s) for s in samples],
-                                 tokenize=False)
-
+    # params.infersent.build_vocab([' '.join(s) for s in samples],
+    #                              tokenize=False)
+    return
 
 def batcher(params, batch):
     # batch contains list of words
     sentences = [' '.join(s) for s in batch]
-    embeddings = params.infersent.encode(sentences, bsize=params.batch_size,
-                                         tokenize=False)
+    num_sents = []
+    # numericalize into BPE format
+    for sent in sentences:
+        num_sent = text_encoder.encode([sent], verbose=False, lazy=True)[0]
+        num_sents.append([encoder['_start_']] + num_sent + [encoder['_end_']])
+
+    sent_batch = pad_batch(num_sents, encoder['_pad_'])
+    sent_lengths = (sent_batch[:, :-1] != encoder['_pad_']).sum(axis=1) # numpy
+    sent_batch = Variable(torch.from_numpy(sent_batch)).cuda(params.gpu_id)
+    sent_mask = make_std_mask(sent_batch, encoder['_pad_'])
+
+    embeddings = params.infersent.encode(sent_batch, sent_mask)
+    embeddings = params.infersent.pick_h(embeddings, sent_lengths)
+
     return embeddings
 
 
@@ -195,10 +236,9 @@ if __name__ == "__main__":
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:
         # Load model
-        MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
+        MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle")
 
-        params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
-        params_senteval.infersent.set_glove_path(GLOVE_PATH)
+        params_senteval.infersent = torch.load(MODEL_PATH) # , map_location=map_locations
 
         se = senteval.SentEval(params_senteval, batcher, prepare)
         results_transfer = se.eval(transfer_tasks)
@@ -217,9 +257,8 @@ if __name__ == "__main__":
             model_name = params.outputmodelname + '-{}.pickle'.format(epoch)
             model_path = pjoin(params.outputdir, model_name)
 
-            dissent = torch.load(model_path, map_location=map_locations)
-            params_senteval.infersent = dissent.encoder  # this might be good enough
-            params_senteval.infersent.set_glove_path(GLOVE_PATH)
+            dissentT = torch.load(model_path)  # , map_location=map_locations
+            params_senteval.infersent = dissentT  # this might be good enough
 
             se = senteval.SentEval(params_senteval, batcher, prepare)
             results_transfer = se.eval(transfer_tasks)

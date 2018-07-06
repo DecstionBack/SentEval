@@ -239,6 +239,7 @@ if __name__ == "__main__":
         MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle")
 
         params_senteval.infersent = torch.load(MODEL_PATH) # , map_location=map_locations
+        params_senteval.infersent.eval()
 
         se = senteval.SentEval(params_senteval, batcher, prepare)
         results_transfer = se.eval(transfer_tasks)
@@ -258,6 +259,8 @@ if __name__ == "__main__":
             model_path = pjoin(params.outputdir, model_name)
 
             dissentT = torch.load(model_path)  # , map_location=map_locations
+            dissentT.eval()
+
             params_senteval.infersent = dissentT  # this might be good enough
 
             se = senteval.SentEval(params_senteval, batcher, prepare)

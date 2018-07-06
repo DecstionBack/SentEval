@@ -177,13 +177,13 @@ class DisSentT(nn.Module):
         return seq_loss.mean()
 
 
-def make_model(encoder, config, word_embeddings=None, ctx_embeddings=None):
+def make_model(encoder, config, word_embeddings=None): # , ctx_embeddings=None
     # encoder: dictionary, for vocab
     "Helper: Construct a model from hyperparameters."
     c = copy.deepcopy
     attn = MultiHeadedAttention(config['n_heads'], config['d_model'])
     ff = PositionwiseFeedForward(config['d_model'], config['d_ff'], config['dpout'])
-    position = PositionalEncoding(config, ctx_embeddings)
+    position = PositionalEncoding(config)
 
     generator_tied_embeddings = word_embeddings if config['tied'] else None
 
@@ -291,7 +291,7 @@ class Embeddings(nn.Module):
 
 class PositionalEncoding(nn.Module):
     "Implement the PE function."
-    def __init__(self, config, ctx_embeddings=None):
+    def __init__(self, config, max_len=5000):
         # ctx_embeddings: (max_len, n_embed)
         # we don't need to define new, just use the same...
 
@@ -299,13 +299,13 @@ class PositionalEncoding(nn.Module):
         self.dropout = nn.Dropout(p=config['dpout'])
 
         # Compute the positional encodings once in log space.
-        # pe = torch.zeros(max_len, config.n_embed)
-        # position = torch.arange(0, max_len).unsqueeze(1)
-        # div_term = torch.exp(torch.arange(0, config.n_embed, 2) *
-        #                      -(math.log(10000.0) / config.n_embed))
-        # pe[:, 0::2] = torch.sin(position * div_term)
-        # pe[:, 1::2] = torch.cos(position * div_term)
-        pe = torch.from_numpy(ctx_embeddings)
+        pe = torch.zeros(max_len, config.d_model)
+        position = torch.arange(0, max_len).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, config.d_model, 2) *
+                             -(math.log(10000.0) / config.d_model))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        # pe = torch.from_numpy(ctx_embeddings)
         pe = pe.unsqueeze(0)  # add one dimension to beginning (1, time, n_embed)
         self.register_buffer('pe', pe)  # this will add pe to self
 

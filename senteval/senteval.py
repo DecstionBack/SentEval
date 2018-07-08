@@ -62,13 +62,12 @@ class SentEval(object):
         # if not params.usepytorch and params.classifier == 'MLP':
         #     assert False, 'No MLP implemented in scikit-learn'
 
-        self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC',
+        self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST2', 'SST5', 'TREC', 'MRPC',
                            'SICKRelatedness', 'SICKEntailment', 'STSBenchmark',
                            'SNLI', 'ImageCaptionRetrieval', 'STS12', 'STS13',
                            'STS14', 'STS15', 'STS16', 'DIS', 'PDTB', 'DAT',
                            'PDTB_EX', 'PDTB_IMEX',
-                           'ABSA_CH', 'ABSA_SP',
-                           'STS_SP']
+                           'ABSA_CH', 'ABSA_SP', 'STS_SP']
 
     def eval(self, name):
         # evaluate on evaluation [name], either takes string or list of strings

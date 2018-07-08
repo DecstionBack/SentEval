@@ -19,7 +19,7 @@ from senteval.sick import SICKRelatednessEval, SICKEntailmentEval
 from senteval.mrpc import MRPCEval
 from senteval.sts import STS12Eval, STS13Eval, STS14Eval, STS15Eval, STS16Eval, \
     STSBenchmarkEval, STS_SPBenchmarkEval
-from senteval.sst import SSTBinaryEval
+from senteval.sst import SSTEval
 from senteval.rank import ImageCaptionRetrievalEval
 from senteval.dis import DISEval
 from senteval.ABSA_CH import ABSA_CHEval
@@ -84,9 +84,10 @@ class SentEval(object):
             self.evaluation = MPQAEval(tpath + '/MPQA', seed=self.params.seed)
         elif name == 'SUBJ':
             self.evaluation = SUBJEval(tpath + '/SUBJ', seed=self.params.seed)
-        elif name == 'SST':
-            self.evaluation = SSTBinaryEval(tpath + '/SST/binary',
-                                            seed=self.params.seed)
+        elif name == 'SST2':
+            self.evaluation = SSTEval(tpath + '/SST/binary', nclasses=2, seed=self.params.seed)
+        elif name == 'SST5':
+            self.evaluation = SSTEval(tpath + '/SST/fine', nclasses=5, seed=self.params.seed)
         elif name == 'TREC':
             self.evaluation = TRECEval(tpath + '/TREC', seed=self.params.seed)
         elif name == 'MRPC':

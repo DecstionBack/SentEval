@@ -191,7 +191,7 @@ elif params.pdtb:
 elif params.dat:
     transfer_tasks = ['DAT']
 else:
-    transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+    transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'SICKRelatedness',
                       'SICKEntailment', 'MRPC', 'STS14']
 
 # define senteval params

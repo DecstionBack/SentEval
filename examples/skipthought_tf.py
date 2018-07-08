@@ -82,6 +82,6 @@ if __name__ == "__main__":
         # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'SICKRelatedness',
         #          'SICKEntailment', 'MRPC', 'STS14'])
         # se.eval(['DIS'])
-        results_transfer = se.eval(['PDTB'])
+        results_transfer = se.eval(['PDTB_IMEX', 'PDTB_EX'])
 
         print(results_transfer)

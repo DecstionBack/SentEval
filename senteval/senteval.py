@@ -28,19 +28,24 @@ from senteval.pdtb import PDTB_Eval
 from senteval.pdtb_ex import PDTB_EX_Eval
 from senteval.pdtb_imex import PDTB_IMEX_Eval
 from senteval.dat import DAT_EVAL
+from senteval import utils
 
 class SentEval(object):
     def __init__(self, params, batcher, prepare=None):
         # setting default parameters
-        params.usepytorch = True if 'usepytorch' not in params else \
-            params.usepytorch
-        params.classifier = 'LogReg' if 'classifier' not in params else \
-            params.classifier
-        params.nhid = 0 if 'nhid' not in params else params.nhid
-        params.batch_size = 128 if 'batch_size' not in params else \
-            params.batch_size
+        params = utils.dotdict(params)
+        params.usepytorch = True if 'usepytorch' not in params else params.usepytorch
         params.seed = 1111 if 'seed' not in params else params.seed
+
+        params.batch_size = 128 if 'batch_size' not in params else params.batch_size
+        params.nhid = 0 if 'nhid' not in params else params.nhid
         params.kfold = 5 if 'kfold' not in params else params.kfold
+
+        if 'classifier' not in params or not params['classifier']:
+            params.classifier = {'nhid': 0}
+
+        assert 'nhid' in params.classifier, 'Set number of hidden units in classifier config!!'
+
         self.params = params
 
         # set up bilinear projection, with learnable matrix W

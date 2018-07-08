@@ -140,9 +140,9 @@ def write_to_dis_csv(file_name, epoch, results_transfer, print_header=False):
 
 
 def write_to_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14',
+    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14',
               "ACC_AVG"]
-    acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC']
+    acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
         if print_header:

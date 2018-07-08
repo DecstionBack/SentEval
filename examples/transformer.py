@@ -53,12 +53,16 @@ class LayerNorm(nn.Module):
 class Generator(nn.Module):
     "Define standard linear + softmax generation step."
 
-    def __init__(self, d_model, vocab_size, word_embeddings=None):
+    def __init__(self, d_model, vocab_size, np_word_embedding=None, word_embedding_weight=None):
         super(Generator, self).__init__()
         self.proj = nn.Linear(d_model, vocab_size, bias=False)
-        if word_embeddings is not None:
-            self.proj.weight.data.copy_(torch.from_numpy(word_embeddings))
+        # this has the advantage that we don't need an embedding matrix actually...
+        # only need this one...
+        if np_word_embedding is not None:
+            self.proj.weight.data.copy_(torch.from_numpy(np_word_embedding))
             self.proj.weight.requires_grad = False
+        if word_embedding_weight is not None:
+            self.proj.weight = word_embedding_weight  # tied-weights
 
     def forward(self, x):
         return F.log_softmax(self.proj(x), dim=-1)
@@ -183,17 +187,25 @@ def make_model(encoder, config, word_embeddings=None): # , ctx_embeddings=None
     c = copy.deepcopy
     attn = MultiHeadedAttention(config['n_heads'], config['d_model'])
     ff = PositionwiseFeedForward(config['d_model'], config['d_ff'], config['dpout'])
-    position = PositionalEncoding(config)
+    position = PositionalEncoding(config) # ctx_embeddings
 
-    generator_tied_embeddings = word_embeddings if config['tied'] else None
+    embedding_layer = Embeddings(encoder, config, word_embeddings)
+
+    if config['tied']:
+        if config['train_emb']:
+            generator = Generator(config['d_model'], len(encoder), word_embedding_weight=embedding_layer.lut.weight)
+        else:
+            generator = Generator(config['d_model'], len(encoder), np_word_embedding=word_embeddings)
+    else:
+        generator = Generator(config['d_model'], len(encoder))
 
     model = DisSentT(
         config,
         Decoder(
             DecoderLayer(config['d_model'], c(attn), c(ff), config['dpout']),
             config['n_layers']),
-        nn.Sequential(Embeddings(encoder, config, word_embeddings), c(position)),
-        Generator(config['d_model'], len(encoder), generator_tied_embeddings)
+        nn.Sequential(embedding_layer, c(position)),
+        generator
     )
 
     # This was important from their code.
@@ -299,10 +311,10 @@ class PositionalEncoding(nn.Module):
         self.dropout = nn.Dropout(p=config['dpout'])
 
         # Compute the positional encodings once in log space.
-        pe = torch.zeros(max_len, config.d_model)
+        pe = torch.zeros(max_len, config['d_model'])
         position = torch.arange(0, max_len).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, config.d_model, 2) *
-                             -(math.log(10000.0) / config.d_model))
+        div_term = torch.exp(torch.arange(0, config['d_model'], 2) *
+                             -(math.log(10000.0) / config['d_model']))
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         # pe = torch.from_numpy(ctx_embeddings)
@@ -313,6 +325,7 @@ class PositionalEncoding(nn.Module):
         x = x + Variable(self.pe[:, :x.size(1)],
                          requires_grad=False)
         return self.dropout(x)
+
 
 class NoamOpt:
     "Optim wrapper that implements rate."

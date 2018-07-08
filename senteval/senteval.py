@@ -52,18 +52,15 @@ class SentEval(object):
         params.bilinear = False if 'bilinear' not in params else params.bilinear
 
         self.batcher = batcher
-        if prepare:
-            self.prepare = prepare
-        else:
-            self.prepare = lambda x, y: None
+        self.prepare = prepare if prepare else lambda x, y: None
 
         # sanity check
-        assert params.classifier in ['LogReg', 'MLP']
-        if params.classifier == 'MLP':
-            assert params.nhid > 0, 'When using an MLP, \
-                you need to set params.nhid>0'
-        if not params.usepytorch and params.classifier == 'MLP':
-            assert False, 'No MLP implemented in scikit-learn'
+        # assert params.classifier in ['LogReg', 'MLP']
+        # if params.classifier == 'MLP':
+        #     assert params.nhid > 0, 'When using an MLP, \
+        #         you need to set params.nhid>0'
+        # if not params.usepytorch and params.classifier == 'MLP':
+        #     assert False, 'No MLP implemented in scikit-learn'
 
         self.list_tasks = ['CR', 'MR', 'MPQA', 'SUBJ', 'SST', 'TREC', 'MRPC',
                            'SICKRelatedness', 'SICKEntailment', 'STSBenchmark',

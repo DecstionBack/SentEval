@@ -57,7 +57,8 @@ class DISEval(object):
         # TODO: change this part
         # dico_label = {'but': 0, 'because': 1, 'when': 2, 'if': 3, 'for example': 4, 'so': 5, 'before': 6, 'still': 7}
         # dico_label = {'but': 0, 'because': 1, 'when': 2, 'if': 3, 'so': 4}
-        dico_label = {"and": 0, "because": 1, "but": 2, "if": 3, "when": 4}
+        # dico_label = {"and": 0, "because": 1, "but": 2, "if": 3, "when": 4}
+        dico_label = {"but": 0, "because": 1, "if": 2, "before": 3, "so": 4}  # new algorithm
         for key in self.data:
             if key not in self.X: self.X[key] = []
             if key not in self.y: self.y[key] = []

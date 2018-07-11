@@ -65,7 +65,6 @@ params_senteval = dotdict(params_senteval)
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
 
 if __name__ == "__main__":
-
     config_gpu = tf.ConfigProto()
     config_gpu.gpu_options.allow_growth = True
 
@@ -82,6 +81,6 @@ if __name__ == "__main__":
         # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'SICKRelatedness',
         #          'SICKEntailment', 'MRPC', 'STS14'])
         se.eval(['DIS'])
-        results_transfer = se.eval(['PDTB_IMEX', 'PDTB_EX'])
+        #results_transfer = se.eval(['PDTB_IMEX', 'PDTB_EX'])
 
-        print(results_transfer)
+        #print(results_transfer)

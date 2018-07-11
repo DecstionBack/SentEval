@@ -220,6 +220,7 @@ if __name__ == "__main__":
 
             dissent = torch.load(model_path, map_location=map_locations)
             params_senteval.infersent = dissent.encoder  # this might be good enough
+            params_senteval.infersent.cuda(params.gpu_id) # set this on CUDA
             params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
             se = senteval.SentEval(params_senteval, batcher, prepare)

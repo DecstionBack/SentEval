@@ -87,8 +87,8 @@ do
     done
 done
 
-mv STS_SP/STS14/sts.gs.li65.txt STS_SP/STS14/STS.gs.li65.txt
-mv STS_SP/STS14/sts.input.li65.txt STS_SP/STS14/STS.input.li65.txt
+mv senteval_data/STS_SP/STS14/sts.gs.li65.txt senteval_data/STS_SP/STS14/STS.gs.li65.txt
+mv senteval_data/STS_SP/STS14/sts.input.li65.txt senteval_data/STS_SP/STS14/STS.input.li65.txt
 
 python process_STS_SP.py
 

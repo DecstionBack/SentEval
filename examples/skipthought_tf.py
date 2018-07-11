@@ -76,10 +76,11 @@ if __name__ == "__main__":
                            embedding_matrix_file=EMBEDDING_MATRIX_FILE,
                            checkpoint_path=CHECKPOINT_PATH)
 
-
-
         params_senteval.encoder = encoder
         se = senteval.SentEval(params_senteval, batcher, prepare)
-        # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+        # se.eval(['DIS', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST2', 'TREC', 'SICKRelatedness',
         #          'SICKEntailment', 'MRPC', 'STS14'])
         se.eval(['DIS'])
+        #results_transfer = se.eval(['PDTB_IMEX', 'PDTB_EX'])
+
+        #print(results_transfer)

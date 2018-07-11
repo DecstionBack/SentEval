@@ -1,7 +1,3 @@
-"""
-Similar to `dissent_eval.py` but just for Multilingual models
-"""
-
 from __future__ import absolute_import, division, unicode_literals
 
 import sys
@@ -12,7 +8,6 @@ from exutil import dotdict
 import argparse
 import logging
 from os.path import join as pjoin
-from dissent import BLSTMEncoder, AVGEncoder
 
 import logging
 
@@ -25,9 +20,12 @@ parser.add_argument("--outputmodelname", type=str, default='dis-model')
 parser.add_argument("--gpu_id", type=int, default=0, help="GPU ID, we map all model's gpu to this id")
 parser.add_argument("--search_start_epoch", type=int, default=-1, help="Search from [start, end] epochs ")
 parser.add_argument("--search_end_epoch", type=int, default=-1, help="Search from [start, end] epochs")
-parser.add_argument("--lang", type=str, default='CH', help="CH|SP, change language")
-parser.add_argument("--random", action='store_true', help="Use randomly initialized network")
-parser.add_argument("--avg", action="store_true", help="use average of word embeddings")
+parser.add_argument("--dis", action='store_true', help="run on DIS")
+parser.add_argument("--pdtb", action='store_true', help="run on PDTB, PDTB_IMEX, PDTB_EX")
+parser.add_argument("--dat", action='store_true', help="run on DAT")
+parser.add_argument("--mlp", action='store_true', help="use MLP")
+parser.add_argument("--bilinear", action='store_true',
+                    help="Vector dimension too large, do not use BiLinear interaction")
 
 params, _ = parser.parse_known_args()
 
@@ -46,11 +44,7 @@ logging.getLogger().addHandler(file_handler)
 torch.cuda.set_device(params.gpu_id)
 
 # Set PATHs
-if params.lang == 'SP':
-    GLOVE_PATH = '/home/anie/fasttext/wiki.es.vec'
-elif params.lang == "CH":
-    GLOVE_PATH = '/home/anie/fasttext/wiki.zh.vec'
-
+GLOVE_PATH = '/home/anie/glove/glove.840B.300d.txt'
 PATH_SENTEVAL = '/home/anie/SentEval'
 PATH_TO_DATA = '/home/anie/SentEval/data/senteval_data/'
 
@@ -74,29 +68,72 @@ def batcher(params, batch):
     return embeddings
 
 
-def write_to_csv(file_name, epoch, results_transfer, print_header=False):
-    header = ['Epoch', 'ABSA_CH:Phone', 'ABSA_CH:Camera'] if params.lang == 'CH' else ['Epoch', 'ABSA_SP:Restaurant', 'STS_SP']
-    acc_header = ['ABSA_CH:Phone', 'ABSA_CH:Camera'] if params.lang == 'CH' else ['ABSA_SP:Restaurant']
+def write_to_dis_csv(file_name, epoch, results_transfer, print_header=False):
+    header = ['Epoch', 'Result']
     with open(file_name, 'a') as csvfile:
         writer = csv.writer(csvfile)
         if print_header:
             writer.writerow(header)
+        results = ['Epoch {}'.format(epoch)]
+        if params.dis:
+            acc = results_transfer['DIS']['acc']
+        elif params.pdtb:
+            # this does not print two tasks...only print the first one
+            # fix it...
+            if 'PDTB' in results_transfer:
+                acc = results_transfer['PDTB']['acc']
+            elif 'PDTB_EX' in results_transfer:
+                acc = results_transfer['PDTB_EX']['acc']
+            elif 'PDTB_IMEX' in results_transfer:
+                acc = results_transfer['PDTB_IMEX']['acc']
+            else:
+                raise Exception("task not in PDTB range")
+        elif params.dat:
+            acc = results_transfer['DAT']['acc']
+        else:
+            raise Exception("must be one of two: dis or pdtb or dat")
 
+        results.append("{0:.2f}".format(acc))
+
+        writer.writerow(results)
+
+
+def write_to_csv(file_name, epoch, results_transfer, print_header=False):
+    header = ['Epoch', 'MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness', 'SICKEntailment', 'MRPC', 'STS14',
+              "ACC_AVG"]
+    acc_header = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC']
+    with open(file_name, 'a') as csvfile:
+        writer = csv.writer(csvfile)
+        if print_header:
+            writer.writerow(header)
         # then process result_transfer to print to file
         # since each test has different dictionary entry, we process them separately...
         results = ['Epoch {}'.format(epoch)]
         acc_s = []
         for h in acc_header:
-            h, field = h.split(":")
-            acc = results_transfer[h]['{} acc'.format(field)]
+            acc = results_transfer[h]['acc']
             acc_s.append(acc)
             results.append("{0:.2f}".format(acc))  # take 2 digits, and manually round later
+        pear = results_transfer['SICKRelatedness']['pearson']
+        results.append("{0:.4f}".format(pear))
+        acc = results_transfer['SICKEntailment']['acc']
+        acc_s.append(acc)
+        results.append("{0:.2f}".format(acc))
 
-        if params.lang == "SP":
-            stsbenchmark_dev_pear = results_transfer['STS_SP'][u'devpearson']
-            stsbenchmark_test_pear = results_transfer['STS_SP'][u'pearson']
+        mprc_acc = results_transfer['MRPC']['acc']
+        mprc_f1 = results_transfer['MRPC']['f1']
 
-            results.append("{0:.4f}/{0:.4f}".format(stsbenchmark_dev_pear, stsbenchmark_test_pear))
+        acc_s.append(mprc_acc)
+
+        results.append("{0:.2f}/{0:.2f}".format(mprc_acc, mprc_f1))
+
+        sts14_pear_wmean = results_transfer['STS14']['all']['pearson']['wmean']
+        sts14_pear_mean = results_transfer['STS14']['all']['pearson']['mean']
+
+        results.append("{0:.4f}/{0:.4f}".format(sts14_pear_wmean, sts14_pear_mean))
+
+        mean_acc = sum(acc_s) / float(len(acc_s))
+        results.append("{0:.4f}".format(mean_acc))
 
         writer.writerow(results)
 
@@ -106,12 +143,25 @@ Evaluation of trained model on Transfer Tasks (SentEval)
 """
 
 # define transfer tasks
-transfer_tasks = ['ABSA_CH'] if params.lang == 'CH' else ['ABSA_SP', 'STS_SP']
+if params.dis:
+    transfer_tasks = ['DIS']
+elif params.pdtb:
+    transfer_tasks = ['PDTB_IMEX']  # 'PDTB_EX'
+elif params.dat:
+    transfer_tasks = ['DAT']
+else:
+    transfer_tasks = ['MR', 'CR', 'SUBJ', 'MPQA', 'SST', 'TREC', 'SICKRelatedness',
+                      'SICKEntailment', 'MRPC', 'STS14']
 
 # define senteval params
-# Can choose to use MLP instead
-params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
-                           'seed': 1111, 'kfold': 5})
+if params.mlp:
+    # keep nhid the same as DisSent model (otherwise we can try 1024)
+    params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
+                               'seed': 1111, 'kfold': 5, 'classifier': 'MLP', 'nhid': 512,
+                               'bilinear': params.bilinear})
+else:
+    params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
+                               'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear})
 
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)
@@ -134,36 +184,20 @@ if __name__ == "__main__":
     epoch_numbers = map(lambda i: int(i), epoch_numbers)
     epoch_numbers = sorted(epoch_numbers)  # now sorted
 
-    csv_file_name = 'senteval_results.csv'
+    suffix = ""
+    if params.mlp:
+        suffix += "_mlp"
+    if params.bilinear:
+        suffix += "_bilinear"
+
+    csv_file_name = 'senteval_results.csv' if len(transfer_tasks) == 10 else "_".join(transfer_tasks) + suffix + ".csv"
 
     # original setting
     if params.search_start_epoch == -1 or params.search_end_epoch == -1:
-        if not params.random and not params.avg:
-            # Load model
-            MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
-            params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
-        else:
-            config_dis_model = {
-                'word_emb_dim': 300,
-                'n_classes': 5,
-                'enc_lstm_dim': 4096,
-                'n_enc_layers': 1,
-                'dpout_emb': 0.,
-                'dpout_model': 0.,
-                'dpout_fc': 0.,
-                'fc_dim': 512,
-                'bsize': 32,
-                'pool_type': 'max',
-                'encoder_type': 'BLSTMEncoder',
-                'tied_weights': False,
-                'use_cuda': True,
-            }
-            if params.random:
-                # initialize randomly
-                logging.info("initialize network randomly")
-                params_senteval.infersent = BLSTMEncoder(config_dis_model)
-            else:
-                params_senteval.infersent = AVGEncoder(config_dis_model)
+        # Load model
+        MODEL_PATH = pjoin(params.outputdir, params.outputmodelname + ".pickle.encoder")
+
+        params_senteval.infersent = torch.load(MODEL_PATH, map_location=map_locations)
         params_senteval.infersent.set_glove_path(GLOVE_PATH)
 
         se = senteval.SentEval(params_senteval, batcher, prepare)
@@ -193,6 +227,8 @@ if __name__ == "__main__":
             logging.info(results_transfer)
 
             # now we sift through the result dictionary and save results to csv
-            write_to_csv(pjoin(params.outputdir, "senteval_results.csv"), epoch, results_transfer, first)
-
+            if not params.dis and not params.pdtb and not params.dat:
+                write_to_csv(pjoin(params.outputdir, "senteval_results.csv"), epoch, results_transfer, first)
+            else:
+                write_to_dis_csv(pjoin(params.outputdir, csv_file_name), epoch, results_transfer, first)
             first = False

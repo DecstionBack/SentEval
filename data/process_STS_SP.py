@@ -14,7 +14,7 @@ output_directory = "senteval_data/STS_SP/STSBenchmark/"
 if not os.path.exists(output_directory):
 	os.makedirs(output_directory)
 output_prefix = pjoin(output_directory, "sts-")
-output_suffix = ".tsv"
+output_suffix = ".csv"
 
 all_data = []
 

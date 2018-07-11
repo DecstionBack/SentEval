@@ -10,9 +10,9 @@ import numpy as np
 
 from tools.validation import SplitClassifier, InnerKFoldClassifier
 
-class DISEval(object):
+class DAT_EVAL(object):
     def __init__(self, taskpath, seed=1111):
-        logging.debug('***** Transfer task : Discourse Classification*****\n\n')
+        logging.debug('***** Transfer task : Discourse Asymmetry Test Classification*****\n\n')
         self.seed = seed
         train1 = self.loadFile(os.path.join(taskpath, 's1.train'))
         train2 = self.loadFile(os.path.join(taskpath, 's2.train'))
@@ -36,7 +36,6 @@ class DISEval(object):
         sorted_test = sorted(zip(test2, test1, testlabels), key=lambda z:(len(z[0]), len(z[1]), z[2]))
         test2, test1, testlabels = map(list, zip(*sorted_test))
 
-
         self.samples = train1 + train2 + valid1 + valid2 + test1 + test2
         self.data = {
             'train': (train1, train2, trainlabels),
@@ -55,10 +54,7 @@ class DISEval(object):
     def run(self, params, batcher):
         self.X, self.y = {}, {}
         # TODO: change this part
-        # dico_label = {'but': 0, 'because': 1, 'when': 2, 'if': 3, 'for example': 4, 'so': 5, 'before': 6, 'still': 7}
-        # dico_label = {'but': 0, 'because': 1, 'when': 2, 'if': 3, 'so': 4}
-        # dico_label = {"and": 0, "because": 1, "but": 2, "if": 3, "when": 4}
-        dico_label = {"but": 0, "because": 1, "if": 2, "before": 3, "so": 4}  # new algorithm
+        dico_label = {"entail": 0, "contradict": 1} # 'neutral': 2
         for key in self.data:
             if key not in self.X: self.X[key] = []
             if key not in self.y: self.y[key] = []
@@ -79,9 +75,9 @@ class DISEval(object):
             self.X[key] = np.vstack(enc_input)
             self.y[key] = [dico_label[y] for y in mylabels] # we are zero-indexed so -1
 
-        config_classifier = {'nclasses':5, 'seed':self.seed, 'usepytorch':params.usepytorch, 'cudaEfficient': True,\
+        config_classifier = {'nclasses':len(dico_label), 'seed':self.seed, 'usepytorch':params.usepytorch, 'cudaEfficient': True,\
                             'classifier':params.classifier, 'nhid': params.nhid, 'maxepoch':100, 'nepoches':4, 'noreg':False}
         clf = SplitClassifier(self.X, self.y, config_classifier)
         devacc, testacc = clf.run()
-        logging.debug('Dev acc : {0} Test acc : {1} for DIS\n'.format(devacc, testacc))
+        logging.debug('Dev acc : {0} Test acc : {1} for DAT\n'.format(devacc, testacc))
         return {'devacc': devacc, 'acc': testacc, 'ndev':len(self.data['valid'][0]), 'ntest':len(self.data['test'][0])}

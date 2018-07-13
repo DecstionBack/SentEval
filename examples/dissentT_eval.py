@@ -199,10 +199,11 @@ if params.mlp:
     # keep nhid the same as DisSent model (otherwise we can try 1024)
     params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
                                'seed': 1111, 'kfold': 5, 'classifier': 'MLP', 'nhid': 512,
-                               'bilinear': params.bilinear})
+                               'bilinear': params.bilinear, 'batch_size': 32})
 else:
     params_senteval = dotdict({'usepytorch': True, 'task_path': PATH_TO_DATA,
-                               'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear})
+                               'seed': 1111, 'kfold': 5, 'bilinear': params.bilinear,
+                               'batch_size': 32})
 
 # Set up logger
 logging.basicConfig(format='%(asctime)s : %(message)s', level=logging.DEBUG)

@@ -98,19 +98,21 @@ class PDTB_Eval(object):
                              'classifier': params.classifier, 'nhid': params.nhid, 'maxepoch': 100, 'nepoches': 10,
                              'noreg': False, 'bilinear': params.bilinear}
         clf = SplitClassifier(self.X, self.y, config_classifier)
-        devacc, testacc, classifier = clf.run(return_clf=True)
+        devacc, testacc = clf.run() # classifier, return_clf=True
 
         # we also present precision and recall for each class
-        y_test_hat = classifier.predict(self.X['test'])  # a numpy array
-        y_test = np.array(self.y['test'])
+        # y_test_hat = classifier.predict(self.X['test'])  # a numpy array
+        # y_test = np.array(self.y['test'])
+        #
+        # precision, recall, _, support = metrics.precision_recall_fscore_support(y_test, y_test_hat)
+        # precision, recall, support = precision.tolist(), recall.tolist(), support.tolist()
+        #
+        # per_label_report = {}
+        # for i in range(len(precision)):
+        #     per_label_report[dico_label_list[i]] = [recall[i], precision[i], support[i]]
 
-        precision, recall, _, support = metrics.precision_recall_fscore_support(y_test, y_test_hat)
-        precision, recall, support = precision.tolist(), recall.tolist(), support.tolist()
-
-        per_label_report = {}
-        for i in range(len(precision)):
-            per_label_report[dico_label_list[i]] = [recall[i], precision[i], support[i]]
+        # 'label_report': per_label_report
 
         logging.debug('Dev acc : {0} Test acc : {1} for PDTB\n'.format(devacc, testacc))
         return {'devacc': devacc, 'acc': testacc, 'ndev': len(self.data['valid'][0]),
-                'ntest': len(self.data['test'][0]), 'label_report': per_label_report}
+                'ntest': len(self.data['test'][0])}

@@ -1,3 +1,4 @@
+
 """
 This file is adapted from OpenNMT
 Alexander Rush's blog:
@@ -120,7 +121,7 @@ class DisSentT(nn.Module):
     other models.
     """
 
-    def __init__(self, config, decoder, tgt_embed, generator):
+    def __init__(self, config, decoder, tgt_embed, generator, projection_layer):
         super(DisSentT, self).__init__()
         self.decoder = decoder
         self.tgt_embed = tgt_embed
@@ -128,10 +129,12 @@ class DisSentT(nn.Module):
         self.config = config
 
         self.classifier = nn.Sequential(
-            nn.Linear(config['d_model'] * 4, config['fc_dim']),
+            nn.Linear(config['d_model'] * config['proj_head'] * 4 , config['fc_dim']),
             nn.Linear(config['fc_dim'], config['fc_dim']),
             nn.Linear(config['fc_dim'], config['n_classes'])
         )
+
+        self.projection_layer = projection_layer
 
         self.ce_loss = nn.CrossEntropyLoss(reduce=False)
 
@@ -147,16 +150,32 @@ class DisSentT(nn.Module):
         corr_h = torch.stack(corr_h, dim=0)
         return corr_h
 
+    def pick_mask(self, mask, lengths):
+        corr_mask = []
+        for i, j in enumerate(lengths):
+            corr_mask.append(mask[i, j-1, :])
+        corr_mask = torch.stack(corr_mask, dim=0)
+        return corr_mask
+
     def forward(self, batch, lm=True):
         "Take in and process masked src and target sequences."
         # this computes LM targets!! before the Generator
         u_h = self.encode(batch.s1, batch.s1_mask)
         v_h = self.encode(batch.s2, batch.s2_mask)
+
         # u_h, v_h: (batch_size, time_step, d_model) (which is n_embed)
         if self.config['pick_hid']:
             u, v = self.pick_h(u_h, batch.s1_lengths), self.pick_h(v_h, batch.s2_lengths)
         else:
             u, v = u_h[:, -1, :], v_h[:, -1, :] # last hidden state
+
+        # self.project(u_h) -- u_h: (batch_size, time_step, d_model)
+        # --> u = self.project(u_h), u: (batch_size, d_model * n_head) n_head = 4
+        if self.config['proj_head'] != 1:
+            picked_s1_mask = self.pick_mask(batch.s1_mask, batch.s1_lengths)
+            picked_s2_mask = self.pick_mask(batch.s2_mask, batch.s2_lengths)
+            u = self.projection_layer(u, u_h, u_h, picked_s1_mask)
+            v = self.projection_layer(v, v_h, v_h, picked_s2_mask)
 
         features = torch.cat((u, v, u - v, u * v), 1)
         clf_output = self.classifier(features)
@@ -186,6 +205,7 @@ def make_model(encoder, config, word_embeddings=None): # , ctx_embeddings=None
     "Helper: Construct a model from hyperparameters."
     c = copy.deepcopy
     attn = MultiHeadedAttention(config['n_heads'], config['d_model'])
+    attn_projection = MultiHeadedAttentionProjection(config['proj_head'], config['d_model'], config['proj_type'])
     ff = PositionwiseFeedForward(config['d_model'], config['d_ff'], config['dpout'])
     position = PositionalEncoding(config) # ctx_embeddings
 
@@ -205,7 +225,8 @@ def make_model(encoder, config, word_embeddings=None): # , ctx_embeddings=None
             DecoderLayer(config['d_model'], c(attn), c(ff), config['dpout']),
             config['n_layers']),
         nn.Sequential(embedding_layer, c(position)),
-        generator
+        generator,
+        attn_projection
     )
 
     # This was important from their code.
@@ -268,6 +289,50 @@ class MultiHeadedAttention(nn.Module):
         x = x.transpose(1, 2).contiguous() \
             .view(nbatches, -1, self.h * self.d_k)
         return self.linears[-1](x)
+
+
+class MultiHeadedAttentionProjection(nn.Module):
+    def __init__(self, h, d_model, proj_type=1, dropout=0.1):
+        "Take in model size and number of heads."
+        super(MultiHeadedAttentionProjection, self).__init__()
+        assert d_model % h == 0
+        # We assume d_v always equals d_k
+        self.d_model = d_model
+        self.d_k = d_model // h
+        self.h = h
+        if proj_type == 1:
+            self.linear = nn.Linear(d_model, d_model * h)
+            self.linear_out = nn.Linear(d_model, d_model)
+        elif proj_type == 2:
+            self.linear = nn.Linear(d_model, d_model)
+            self.linear_out = nn.Linear(d_model, d_model * h)
+        self.attn = None
+        self.dropout = nn.Dropout(p=dropout)
+        self.proj_type = proj_type
+
+    def forward(self, query, key, value, mask=None):
+        "Implements Figure 2"
+        nbatches = query.size(0)
+        if mask is not None:
+            # Same mask applied to all h heads.-
+            mask = mask.view(nbatches, 1, 1, -1)
+        nd = self.d_model if self.proj_type == 1 else self.d_k
+        # 1) Do all the linear projections in batch from d_model => h x d_k
+        # query, key, value = \
+        #     [l(x).view(nbatches, -1, self.h, nd).transpose(1, 2)
+        #      for l, x in zip(self.linears, (query, key, value))]
+        query = self.linear(query).view(nbatches, -1, self.h, nd).transpose(1, 2)
+        key = key.repeat(1, 1, self.h).view(nbatches, -1, self.h, nd).transpose(1, 2)
+        value = value.repeat(1, 1, self.h).view(nbatches, -1, self.h, nd).transpose(1, 2)
+
+        # 2) Apply attention on all the projected vectors in batch.
+        x, self.attn = attention(query, key, value, mask=mask,
+                                 dropout=self.dropout)
+
+        # 3) "Concat" using a view and apply a final linear.
+        x = x.transpose(1, 2).contiguous() \
+            .view(nbatches, self.h * nd)
+        return self.linear_out(x)
 
 
 class PositionwiseFeedForward(nn.Module):

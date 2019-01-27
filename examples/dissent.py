@@ -631,7 +631,7 @@ class AVGEncoder(nn.Module):
 from collections import defaultdict
 import sklearn
 
-class SIFEncoder(nn.Module):
+class SIFEncoder(object):
     def __init__(self, config):
         super(SIFEncoder, self).__init__()
         self.bsize = config['bsize']
@@ -644,25 +644,9 @@ class SIFEncoder(nn.Module):
 
         bidrectional = True if not self.tied_weights else False
 
-        self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
-                                bidirectional=bidrectional, dropout=self.dpout_model)
-        self.emb_drop = nn.Dropout(self.dpout_emb)
-
         self.word_freq = None
         self.total = 0
         self.a = 0.001
-
-
-    def is_cuda(self):
-        # either all weights are on cpu or they are on gpu
-        return next(self.parameters()).is_cuda
-
-    def forward(self, sent_tuple):
-        # sent_len: [max_len, ..., min_len] (bsize)
-        # sent: Variable(seqlen x bsize x worddim)
-        sent, sent_len = sent_tuple
-
-        return torch.mean(sent, 0)
 
     def set_glove_path(self, glove_path):
         self.glove_path = glove_path
@@ -755,17 +739,6 @@ class SIFEncoder(nn.Module):
         print('New vocab size : {0} (added {1} words)'.format(
             len(self.word_vec), len(new_word_vec)))
 
-    def get_batch(self, batch):
-        # sent in batch in decreasing order of lengths
-        # batch: (bsize, max_len, word_dim)
-        embed = np.zeros((len(batch[0]), len(batch), self.word_emb_dim))
-
-        for i in range(len(batch)):
-            for j in range(len(batch[i])):
-                embed[j, i, :] = self.word_vec[batch[i][j]]
-
-        return torch.FloatTensor(embed)
-
     def get_X(self, sentences):
         X = []
         for sent in sentences:
@@ -786,9 +759,8 @@ class SIFEncoder(nn.Module):
         if len(sentences) < 512:
             print("Warning: SIF uses PCA to remove common axis. Should try a higher batch size. Start at 512.")
 
+        bsize = len(sentences)
         tic = time.time()
-        sentences, lengths, idx_sort = self.prepare_samples(
-            sentences, bsize, tokenize, verbose)
 
         X = self.get_X(sentences)
         # (batch_size, embedding_size)
@@ -797,12 +769,16 @@ class SIFEncoder(nn.Module):
         pca.fit(X)
         u = pca.components_
 
-        projection_matrix = np.outer(u, u)  # or transpose u
+        # projection_matrix = np.outer(u, u)  # or transpose u
 
         X = X - X.dot(u.transpose()).dot(u)
+
+        # this seems to require to handle "testing" differently...
+        # didn't do this
 
         if verbose:
             print('Speed : {0} sentences/s ({1} mode, bsize={2})'.format(
                 round(len(X) / (time.time() - tic), 2),
-                'gpu' if self.is_cuda() else 'cpu', bsize))
+                'cpu', bsize))
+
         return X

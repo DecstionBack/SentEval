@@ -628,3 +628,181 @@ class AVGEncoder(nn.Module):
                 'gpu' if self.is_cuda() else 'cpu', bsize))
         return embeddings
 
+from collections import defaultdict
+import sklearn
+
+class SIFEncoder(nn.Module):
+    def __init__(self, config):
+        super(SIFEncoder, self).__init__()
+        self.bsize = config['bsize']
+        self.word_emb_dim = config['word_emb_dim']
+        self.enc_lstm_dim = config['enc_lstm_dim']
+        self.pool_type = config['pool_type']
+        self.dpout_model = config['dpout_model']
+        self.dpout_emb = config['dpout_emb']
+        self.tied_weights = config['tied_weights']
+
+        bidrectional = True if not self.tied_weights else False
+
+        self.enc_lstm = nn.LSTM(self.word_emb_dim, self.enc_lstm_dim, 1,
+                                bidirectional=bidrectional, dropout=self.dpout_model)
+        self.emb_drop = nn.Dropout(self.dpout_emb)
+
+        self.word_freq = None
+        self.total = 0
+        self.a = 0.001
+
+
+    def is_cuda(self):
+        # either all weights are on cpu or they are on gpu
+        return next(self.parameters()).is_cuda
+
+    def forward(self, sent_tuple):
+        # sent_len: [max_len, ..., min_len] (bsize)
+        # sent: Variable(seqlen x bsize x worddim)
+        sent, sent_len = sent_tuple
+
+        return torch.mean(sent, 0)
+
+    def set_glove_path(self, glove_path):
+        self.glove_path = glove_path
+
+    def get_word_dict(self, sentences, tokenize=True):
+        # create vocab of words
+        # now it returns frequency counts of words as well
+
+        word_freq = defaultdict(int)
+        word_dict = {}
+
+        if tokenize:
+            from nltk.tokenize import word_tokenize
+        sentences = [s.split() if not tokenize else word_tokenize(s)
+                     for s in sentences]
+        for sent in sentences:
+            for word in sent:
+                word_freq[word] += 1
+                if word not in word_dict:
+                    word_dict[word] = ''
+        # word_dict['<s>'] = ''
+        # word_dict['</s>'] = ''
+        return word_dict, word_freq
+
+    def get_glove(self, word_dict):
+        assert hasattr(self, 'glove_path'), \
+            'warning : you need to set_glove_path(glove_path)'
+        # create word_vec with glove vectors
+        word_vec = {}
+        with open(self.glove_path) as f:
+            for line in f:
+                word, vec = line.split(' ', 1)
+                if word in word_dict:
+                    word_vec[word] = np.fromstring(vec, sep=' ')
+        print('Found {0}(/{1}) words with glove vectors'.format(
+            len(word_vec), len(word_dict)))
+        return word_vec
+
+    def get_glove_k(self, K):
+        assert hasattr(self, 'glove_path'), 'warning : you need \
+                                             to set_glove_path(glove_path)'
+        # create word_vec with k first glove vectors
+        k = 0
+        word_vec = {}
+        with open(self.glove_path) as f:
+            for line in f:
+                word, vec = line.split(' ', 1)
+                if k <= K:
+                    word_vec[word] = np.fromstring(vec, sep=' ')
+                    k += 1
+                if k > K:
+                    if word in ['<s>', '</s>']:
+                        word_vec[word] = np.fromstring(vec, sep=' ')
+
+                if k > K and all([w in word_vec for w in ['<s>', '</s>']]):
+                    break
+        return word_vec
+
+    def build_vocab(self, sentences, tokenize=True):
+        assert hasattr(self, 'glove_path'), 'warning : you need \
+                                             to set_glove_path(glove_path)'
+        word_dict, word_freq = self.get_word_dict(sentences, tokenize)
+        self.word_freq = word_freq
+        self.total = sum(word_freq.values())
+        self.word_vec = self.get_glove(word_dict)
+        print('Vocab size : {0}'.format(len(self.word_vec)))
+
+    # build GloVe vocab with k most frequent words
+    def build_vocab_k_words(self, K):
+        assert hasattr(self, 'glove_path'), 'warning : you need \
+                                             to set_glove_path(glove_path)'
+        self.word_vec = self.get_glove_k(K)
+        print('Vocab size : {0}'.format(K))
+
+    def update_vocab(self, sentences, tokenize=True):
+        assert hasattr(self, 'glove_path'), 'warning : you need \
+                                             to set_glove_path(glove_path)'
+        assert hasattr(self, 'word_vec'), 'build_vocab before updating it'
+        word_dict = self.get_word_dict(sentences, tokenize)
+
+        # keep only new words
+        for word in self.word_vec:
+            if word in word_dict:
+                del word_dict[word]
+
+        # udpate vocabulary
+        if word_dict:
+            new_word_vec = self.get_glove(word_dict)
+            self.word_vec.update(new_word_vec)
+        print('New vocab size : {0} (added {1} words)'.format(
+            len(self.word_vec), len(new_word_vec)))
+
+    def get_batch(self, batch):
+        # sent in batch in decreasing order of lengths
+        # batch: (bsize, max_len, word_dim)
+        embed = np.zeros((len(batch[0]), len(batch), self.word_emb_dim))
+
+        for i in range(len(batch)):
+            for j in range(len(batch[i])):
+                embed[j, i, :] = self.word_vec[batch[i][j]]
+
+        return torch.FloatTensor(embed)
+
+    def get_X(self, sentences):
+        X = []
+        for sent in sentences:
+            s_f = [word for word in sent if word in self.word_vec]
+            weighted_word_embeddings = []
+            for word in s_f:
+                vw = self.word_vec[word]
+                pw = self.word_freq[word] / self.total
+                weighted_word_embeddings.append(self.a / (self.a + pw) * vw)
+            vs = 1.0 / len(s_f) * np.sum(weighted_word_embeddings, axis=0)
+            X.append(vs)
+
+        return np.matrix(X)
+
+    def encode(self, sentences, bsize=64, tokenize=True, verbose=False):
+        # one difference is that the u is moving...not a global thing
+
+        if len(sentences) < 512:
+            print("Warning: SIF uses PCA to remove common axis. Should try a higher batch size. Start at 512.")
+
+        tic = time.time()
+        sentences, lengths, idx_sort = self.prepare_samples(
+            sentences, bsize, tokenize, verbose)
+
+        X = self.get_X(sentences)
+        # (batch_size, embedding_size)
+
+        pca = sklearn.decomposition.PCA(n_components=1)
+        pca.fit(X)
+        u = pca.components_
+
+        projection_matrix = np.outer(u, u)  # or transpose u
+
+        X = X - X.dot(u.transpose()).dot(u)
+
+        if verbose:
+            print('Speed : {0} sentences/s ({1} mode, bsize={2})'.format(
+                round(len(X) / (time.time() - tic), 2),
+                'gpu' if self.is_cuda() else 'cpu', bsize))
+        return X

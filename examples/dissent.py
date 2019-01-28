@@ -628,8 +628,10 @@ class AVGEncoder(nn.Module):
                 'gpu' if self.is_cuda() else 'cpu', bsize))
         return embeddings
 
+
 from collections import defaultdict
-import sklearn
+from sklearn.decomposition import TruncatedSVD, PCA
+
 
 class SIFEncoder(object):
     def __init__(self):
@@ -744,11 +746,17 @@ class SIFEncoder(object):
 
         return np.matrix(X)
 
+    def train(self, sentences):
+        # most to learn the transformation...
+        assert len(sentences) >= 100000, "training data should be large enough for PCA"
+        X = self.get_X(sentences)
+        svd = TruncatedSVD(n_components=1, n_iter=7, random_state=0)
+        svd.fit(X)
+
+        self.u = svd.components_
+
     def encode(self, sentences, bsize=64, tokenize=True, verbose=False):
         # one difference is that the u is moving...not a global thing
-
-        if len(sentences) < 512:
-            print("Warning: SIF uses PCA to remove common axis. Should try a higher batch size. Start at 512.")
 
         bsize = len(sentences)
         tic = time.time()
@@ -756,13 +764,13 @@ class SIFEncoder(object):
         X = self.get_X(sentences)
         # (batch_size, embedding_size)
 
-        pca = sklearn.decomposition.PCA(n_components=1)
-        pca.fit(X)
-        u = pca.components_
+        # u = pca.components_
 
         # projection_matrix = np.outer(u, u)  # or transpose u
+        proj = X.dot(self.u.transpose())
 
-        X = X - X.dot(u.transpose()).dot(u)
+        # X = X - X.dot(u.transpose()).dot(u)
+        X = X - np.outer(proj, self.u)
 
         # this seems to require to handle "testing" differently...
         # didn't do this

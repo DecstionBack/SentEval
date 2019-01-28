@@ -10,6 +10,7 @@ logging.basicConfig(format='[%(asctime)s] %(levelname)s: %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 corpora = []
 with open('/mnt/fs5/anie/lm1b/training-monolingual/news.2011.en.shuffled.toked.txt') as fin:
     for line in fin:
@@ -79,27 +80,19 @@ def gen_train_test(encoder, train_words, bsize=32, print_every=100):
     return train_sent_vec, train_word_vec
 
 if __name__ == '__main__':
+    infersent = torch.load('infersent.allnli.pickle')
+    infersent.set_glove_path("/home/anie/glove/glove.840B.300d.txt")
+    infersent.build_vocab(corpora, tokenize=False)
 
-    print("start dissent")
+    infersent.eval()
+    print("finished building infersent vocab")
 
-    map_locations = {}
-    for d in range(4):
-        map_locations['cuda:{}'.format(d)] = "cuda:{}".format(0)
+    train_sent_vec, train_word_vec = gen_train_test(infersent, train_words[:1000], bsize=32, print_every=1000)
+    test_sent_vec, test_word_vec = gen_train_test(infersent, test_words[:100], bsize=32, print_every=1000)
 
-    dissent = torch.load("/mnt/fs5/anie/DisExtract/exps/books_all/dis-model-10.pickle", map_location=map_locations)
+    print("saving pickle file...")
+    pickle.dump([train_sent_vec, train_word_vec, test_sent_vec, test_word_vec], open('./infersent_train_test.pkl', 'wb'))
 
-    dissent = dissent.encoder
-    dissent.set_glove_path("/home/anie/glove/glove.840B.300d.txt")
-    dissent.build_vocab(corpora, tokenize=False)
+    print("pickle file saved...")
 
-    print("finished building dissent vocab")
 
-    dissent.eval()
-
-    train_sent_vec, train_word_vec = gen_train_test(dissent, train_words[:1000], bsize=32, print_every=100)
-    test_sent_vec, test_word_vec = gen_train_test(dissent, test_words[:100], bsize=32, print_every=100)
-
-    print("saving dissent pickle file...")
-    pickle.dump([train_sent_vec, train_word_vec, test_sent_vec, test_word_vec], open('./dissent_train_test.pkl', 'wb'))
-
-    print("dissent pickle file saved...")
